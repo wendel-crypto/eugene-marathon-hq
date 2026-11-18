@@ -35,7 +35,7 @@ const INFO={date:q.get("d")||new Date().toISOString().slice(0,10),a:{km:num("km"
 const shareInfo=()=>INFO.a.km?INFO:null,weekRun=()=>num("wk"),iso=d=>d.toISOString().slice(0,10);
 function hms(s){s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=String(s%60).padStart(2,"0");return h?h+":"+String(m).padStart(2,"0")+":"+x:m+":"+x;}
 const SH={date:INFO.date,fmt:"post",blob:null,png:null,photo:null,layout:"frame",pos:40};
-function routeFromHash(){const s=q.get("r");if(!s||s.length<25)return null;const n=[];for(let i=0;i+5<=s.length;i+=5){n.push([parseInt(s.slice(i,i+2),36)/1295,parseInt(s.slice(i+2,i+4),36)/1295,(+s[i+4]||0)/9]);}return n.length>4?{n,sl:q.get("rs")||"slower",fl:q.get("rf")||"faster"}:null;}
+function routeFromHash(){const s=q.get("r");if(!s||s.length<25)return null;const n=[];for(let i=0;i+5<=s.length;i+=5){const gap=s[i+4]==="x";n.push([parseInt(s.slice(i,i+2),36)/1295,parseInt(s.slice(i+2,i+4),36)/1295,gap?.5:(+s[i+4]||0)/9,0,null,gap?1:0]);}return n.length>4?{n,sl:q.get("rs")||"slower",fl:q.get("rf")||"faster"}:null;}
 const ROUTE=routeFromHash(),routeFor=()=>ROUTE;
 function cover(g,img,x,y,w,h,pos){const s=Math.max(w/img.naturalWidth,h/img.naturalHeight),sw=w/s,sh=h/s;g.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)*pos/100,sw,sh,x,y,w,h);}
 const RAMP=["#7B5CFF","#C84BC4","#F2606A","#FBA238","#F5F02A"];
@@ -43,8 +43,8 @@ function ramp(c){c=Math.max(0,Math.min(1,c))*(RAMP.length-1);const i=Math.min(RA
 function drawRoute(g,Rt,x,y,w,h,lw,marks){
   const n=Rt.n;let ax=0,ay=0;for(const p of n){ax=Math.max(ax,p[0]);ay=Math.max(ay,p[1]);}ax=ax||.01;ay=ay||.01;
   const s=Math.min(w/ax,h/ay),ox=x+(w-ax*s)/2,oy=y+(h-ay*s)/2,P=p=>[ox+p[0]*s,oy+p[1]*s];
-  g.save();g.lineCap="round";g.lineJoin="round";g.beginPath();n.forEach((p,i)=>{const q=P(p);i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]);});g.strokeStyle="rgba(8,10,26,.85)";g.lineWidth=lw+Math.max(4,lw*.7);g.stroke();
-  for(let i=1;i<n.length;i++){const a=P(n[i-1]),b=P(n[i]);g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.strokeStyle=ramp((n[i-1][2]+n[i][2])/2);g.lineWidth=lw;g.stroke();}
+  g.save();g.lineCap="round";g.lineJoin="round";g.beginPath();n.forEach((p,i)=>{const q=P(p);i&&!p[5]?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]);});g.strokeStyle="rgba(8,10,26,.85)";g.lineWidth=lw+Math.max(4,lw*.7);g.stroke();
+  for(let i=1;i<n.length;i++){if(n[i][5])continue;const a=P(n[i-1]),b=P(n[i]);g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.strokeStyle=ramp((n[i-1][2]+n[i][2])/2);g.lineWidth=lw;g.stroke();}
   if(marks){g.font="700 "+Math.round(lw*1.9)+"px 'DM Sans',system-ui,sans-serif";g.textAlign="center";g.textBaseline="middle";let next=1;for(const p of n){if(p[3]>=next){const q=P(p);g.beginPath();g.arc(q[0],q[1],lw*1.7,0,7);g.fillStyle="#11142D";g.fill();g.lineWidth=Math.max(1.5,lw*.25);g.strokeStyle="#fff";g.stroke();g.fillStyle="#fff";g.fillText(String(next),q[0],q[1]+.5);next++;}}g.textAlign="left";g.textBaseline="alphabetic";}
   const a=P(n[0]),b=P(n[n.length-1]);g.beginPath();g.arc(b[0],b[1],lw*1.25,0,7);g.fillStyle="#11142D";g.fill();g.lineWidth=lw*.5;g.strokeStyle="#fff";g.stroke();
   g.beginPath();g.arc(a[0],a[1],lw*1.25,0,7);g.fillStyle="#00D68F";g.fill();g.lineWidth=lw*.4;g.strokeStyle="#fff";g.stroke();g.restore();
