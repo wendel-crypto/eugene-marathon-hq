@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eugene Marathon Training HQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Mobile-first, one column: hero → today → body & readiness → week picker + day cards → recovery kit → places → rules/log.
+   Each session type owns one strong colour. */
+:root{
+  --bg:#F3F4FB; --card:#FFFFFF; --ink:#11142D; --muted:#565C7C; --line:#DDE1F0; --soft:#ECEEF8;
+  --brand:#3D5AFE; --track:#F0431F; --long:#7B2FF7; --easy:#008F5A; --rec:#007F9C; --rest:#6B7190; --race:#D6006F;
+  --ok:#008F5A; --warn:#B86E00; --bad:#D42A22; --gold:#E0A100;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"DM Sans",system-ui,-apple-system,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0A0C1D; --card:#141834; --ink:#F2F4FF; --muted:#A9AFD2; --line:#272C55; --soft:#1B2044;
+  --brand:#8496FF; --track:#FF7A59; --long:#B992FF; --easy:#3DDC97; --rec:#4FD3EA; --rest:#9298BA; --race:#FF66B3;
+  --ok:#3DDC97; --warn:#FFB84D; --bad:#FF7068; --gold:#FFC93C; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0A0C1D; --card:#141834; --ink:#F2F4FF; --muted:#A9AFD2; --line:#272C55; --soft:#1B2044;
+  --brand:#8496FF; --track:#FF7A59; --long:#B992FF; --easy:#3DDC97; --rec:#4FD3EA; --rest:#9298BA; --race:#FF66B3;
+  --ok:#3DDC97; --warn:#FFB84D; --bad:#FF7068; --gold:#FFC93C; color-scheme:dark;}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);padding:0 16px 72px;-webkit-text-size-adjust:100%}
+.wrap{max-width:1040px;margin:0 auto;display:grid;gap:18px;grid-template-columns:minmax(0,1fr)}
+.wrap>*,.two>*,.daygrid>*,.tiles>*,.kit>*{min-width:0}
+html,body{overflow-x:hidden}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.015em;line-height:1.15}
+h2{font-size:22px;font-weight:800}
+h3{font-size:17px;font-weight:700}
+.n{font-family:var(--display);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)} .small{font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+button{font:600 15px var(--body);cursor:pointer;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 14px;min-height:44px}
+button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+:root[data-theme="dark"] button.primary{color:#0A0C1D}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:#0A0C1D}}
+button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+
+/* hero */
+.hero{margin-top:16px;border-radius:22px;padding:22px 20px;color:#fff;background:linear-gradient(120deg,#2B3FE0 0%,#7B2FF7 55%,#D6006F 100%);display:grid;gap:14px}
+.hero .eyebrow{font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.92}
+.hero h1{font-size:clamp(28px,7vw,44px);font-weight:800}
+.herostats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:720px){.herostats{grid-template-columns:repeat(4,1fr)}}
+.hs{background:rgba(255,255,255,.16);border-radius:14px;padding:12px 14px}
+.hs .k{font-size:13px;font-weight:600;opacity:.92}
+.hs .v{font:800 26px/1.1 var(--display);font-variant-numeric:tabular-nums;margin-top:2px}
+.hs .s{font-size:13px;opacity:.92}
+.status{font-size:14px;color:var(--muted);padding:0 4px}
+
+/* chips */
+.chip{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:13px;padding:4px 10px;border-radius:999px;background:var(--soft);color:var(--ink);white-space:nowrap}
+.chip.t-track{background:var(--track);color:#fff}.chip.t-long{background:var(--long);color:#fff}.chip.t-easy{background:var(--easy);color:#fff}
+.chip.t-recovery{background:var(--rec);color:#fff}.chip.t-rest{background:var(--rest);color:#fff}.chip.t-race{background:var(--race);color:#fff}
+:root[data-theme="dark"] .chip[class*="t-"]{color:#0A0C1D}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip[class*="t-"]{color:#0A0C1D}}
+.chip.green{background:transparent;border:2px solid var(--ok);color:var(--ok)}
+.chip.amber{background:transparent;border:2px solid var(--warn);color:var(--warn)}
+.chip.red{background:transparent;border:2px solid var(--bad);color:var(--bad)}
+.chip.line{background:transparent;border:1.5px solid var(--line);color:var(--muted)}
+
+/* day cards */
+.day{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:grid;grid-template-columns:8px 1fr}
+.day .bar{background:var(--rest)}
+.day.t-track .bar{background:var(--track)}.day.t-long .bar{background:var(--long)}.day.t-easy .bar{background:var(--easy)}
+.day.t-recovery .bar{background:var(--rec)}.day.t-race .bar{background:var(--race)}
+.day .in{padding:14px 16px;display:grid;gap:8px;min-width:0;align-content:start}
+.day.today{border:2px solid var(--brand)}
+.dhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.dwhen{font-weight:700;font-size:14px;color:var(--muted)}
+.dtitle{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.dtitle h3{font-size:19px}
+.km{font:800 22px var(--display);font-variant-numeric:tabular-nums;white-space:nowrap}
+.km small{font:600 13px var(--body);color:var(--muted)}
+.steps{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.steps li{background:var(--soft);border-radius:10px;padding:8px 12px;font-weight:600;font-size:15px}
+.steps li b{font-family:var(--display);font-weight:800}
+.where{font-size:14px;color:var(--muted)}
+.adj{font-size:14px;font-weight:600;color:var(--warn)}
+details.more{border-top:1px solid var(--line);padding-top:8px}
+details.more summary{cursor:pointer;font-weight:700;font-size:15px;list-style:none;display:flex;justify-content:space-between;align-items:center;min-height:32px}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::after{content:"+";font:800 20px var(--display);color:var(--muted)}
+details.more[open] summary::after{content:"–"}
+.checks{display:grid;gap:4px;margin-top:6px}
+.checks label{display:grid;grid-template-columns:26px 1fr;gap:8px;align-items:start;padding:8px 4px;font-size:15px;border-radius:8px}
+.checks input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--easy)}
+.checks input:checked + span{color:var(--muted);text-decoration:line-through}
+.checks b{font-weight:700}
+.daygrid{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:860px){.daygrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.todaywrap .day .in{padding:18px}
+.todaywrap .dtitle h3{font-size:24px}
+
+/* tiles */
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+@media(min-width:720px){.tiles{grid-template-columns:repeat(4,1fr)}}
+.tile{background:var(--soft);border-radius:14px;padding:12px 14px;min-width:0}
+.tile .k{font-size:13px;font-weight:600;color:var(--muted)}
+.tile .v{font:800 24px/1.15 var(--display);font-variant-numeric:tabular-nums}
+.tile .s{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.two{display:grid;gap:18px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:860px){.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+
+/* volume picker */
+.vol{display:flex;align-items:flex-end;gap:3px;height:150px;margin-top:14px}
+.vol button{flex:1;min-width:0;min-height:0;height:100%;padding:0;border:0;background:transparent;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;gap:4px;border-radius:6px}
+.vol .b{border-radius:5px 5px 2px 2px;position:relative;opacity:.38}
+.vol .b i{position:absolute;left:0;right:0;bottom:0;border-radius:5px 5px 2px 2px;background:inherit;filter:saturate(1.4) brightness(.8)}
+.vol button.sel .b{opacity:1}
+.vol button.cur .l{color:var(--ink);font-weight:800}
+.vol .l{font-size:10px;font-weight:600;color:var(--muted);text-align:center;line-height:1}
+.p1{background:var(--easy)}.p2{background:var(--brand)}.p3{background:var(--long)}.p4{background:var(--race)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+.weeknav{display:grid;grid-template-columns:48px 1fr 48px;gap:10px;align-items:center;margin:16px 0 12px}
+.weeknav button{padding:0;font:800 20px var(--display)}
+.weeknav .wt{text-align:center}
+.weeknav .wt .a{font:800 20px var(--display)}
+.weeknav .wt .b2{font-size:14px;color:var(--muted)}
+.wactions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+
+.kit{display:grid;gap:10px;margin-top:12px}
+@media(min-width:720px){.kit{grid-template-columns:1fr 1fr}}
+.kit div{background:var(--soft);border-radius:12px;padding:10px 14px;font-size:15px}
+.kit b{display:block;font-family:var(--display)}
+table{border-collapse:collapse;width:100%;font-size:15px;margin-top:10px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+td.n{font-weight:700}
+.tw{overflow-x:auto}
+ul.plain{margin:10px 0 0;padding-left:20px;display:grid;gap:8px;font-size:15px}
+.logrow{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px;align-items:center}
+.logrow .w{grid-column:1/-1}
+
+.fuel{font-size:14px;font-weight:600;background:var(--soft);border-left:4px solid var(--gold);border-radius:8px;padding:8px 12px}
+.zone{font-weight:800}
+.exgrid{display:grid;gap:12px;margin-top:12px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:620px){.exgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:940px){.exgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.ex{background:var(--soft);border-radius:14px;padding:12px 14px;display:grid;gap:6px;align-content:start}
+.ex svg{width:100%;max-width:190px;height:auto;justify-self:center;color:var(--ink)}
+.ex .dose{font:800 15px var(--display);color:var(--brand)}
+.ex ol{margin:0;padding-left:18px;font-size:14px;display:grid;gap:3px}
+.ex a{font-weight:700;font-size:14px;color:var(--brand)}
+.ex .miss{font-size:13px;color:var(--muted)}
+.brand{display:inline-flex;align-items:center;gap:6px;font:800 13px var(--display);letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:6px;background:var(--ink);color:var(--bg)}
+.timeline{display:grid;gap:6px;margin-top:10px}
+.timeline div{display:grid;grid-template-columns:74px 1fr;gap:10px;background:var(--soft);border-radius:10px;padding:8px 12px;font-size:15px}
+.timeline b{font-family:var(--display)}
+.zrow{display:grid;grid-template-columns:52px 86px 1fr;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px}
+.zrow i{display:block;height:28px;border-radius:8px;color:#fff;font:800 14px/28px var(--display);text-align:center;font-style:normal}
+.minis{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
+.minis button{min-height:0;padding:6px 4px 8px;border:1px solid var(--line);border-radius:12px;background:var(--soft);display:grid;gap:2px;justify-items:center;text-align:center}
+.minis svg{width:58px;height:auto;color:var(--ink)}
+.minis .nm{font:700 12px/1.2 var(--body)}
+.minis .ds{font:800 12px var(--display);color:var(--brand)}
+.minihead{font-weight:700;font-size:14px;margin-top:2px}
+.ex.flash{outline:3px solid var(--brand)}
+.zb{display:inline-block;min-width:34px;padding:0 8px;height:28px;border-radius:8px;color:#fff;font:800 14px/28px var(--display);text-align:center}
+.zb.z1{background:#6B7190}.zb.z2{background:#008F5A}.zb.z3{background:#3D5AFE}.zb.z4{background:#F0431F}.zb.z5{background:#D6006F}.zb.zp{background:var(--soft);color:var(--ink);border:1.5px solid var(--line);line-height:25px}
+.kmz{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+dialog#exdlg{border:0;border-radius:20px;padding:0;background:var(--card);color:var(--ink);width:min(420px,calc(100vw - 32px));max-height:calc(100% - 32px)}
+dialog#exdlg::backdrop{background:rgba(10,12,29,.6)}
+#exdlg .dl{padding:18px 20px 20px;display:grid;gap:10px}
+#exdlg svg{width:100%;max-width:240px;height:auto;justify-self:center;color:var(--ink)}
+#exdlg ol{margin:0;padding-left:20px;display:grid;gap:6px;font-size:16px}
+#exdlg .dose{font:800 18px var(--display);color:var(--brand)}
+#exdlg a{font-weight:700;color:var(--brand)}
+#exdlg .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Sun 25 Apr 2027 · 7:00am · Hayward Field</div>
+  <h1>Eugene Marathon Training HQ</h1>
+  <div class="herostats">
+    <div class="hs"><div class="k">Race day in</div><div class="v" id="countdown">–</div><div class="s">days</div></div>
+    <div class="hs"><div class="k">Now</div><div class="v" id="curweek">–</div><div class="s" id="curphase">–</div></div>
+    <div class="hs"><div class="k">This week</div><div class="v" id="curkm">–</div><div class="s" id="curkmsub">km planned</div></div>
+    <div class="hs"><div class="k">Goal · sub-3:09</div><div class="v" id="mp">–</div><div class="s">marathon pace /km</div></div>
+  </div>
+</header>
+<div class="status" id="syncstatus">Loading plan…</div>
+
+<section class="todaywrap">
+  <h2 id="todayhead" style="margin-bottom:10px">Today</h2>
+  <div id="today"></div>
+</section>
+
+<section class="two">
+  <div class="card">
+    <h2>Readiness</h2>
+    <div class="tiles" style="grid-template-columns:repeat(2,1fr)">
+      <div class="tile"><div class="k">Training readiness</div><div class="v" id="m-ready">–</div><div class="s" id="m-ready-s">&nbsp;</div></div>
+      <div class="tile"><div class="k">Body Battery</div><div class="v" id="m-bb">–</div><div class="s" id="m-bb-s">&nbsp;</div></div>
+      <div class="tile"><div class="k">HRV last night</div><div class="v" id="m-hrv">–</div><div class="s" id="m-hrv-s">&nbsp;</div></div>
+      <div class="tile"><div class="k">Morning check</div><div class="v" id="m-flag">–</div><div class="s" id="m-flag-s">Runs daily at 4:45am</div></div>
+    </div>
+    <p class="small muted" id="live-note" style="margin:10px 0 0">Connecting to Garmin…</p>
+  </div>
+  <div class="card">
+    <h2>Body · Garmin Index scale</h2>
+    <div class="tiles" style="grid-template-columns:repeat(2,1fr)">
+      <div class="tile"><div class="k">Weight</div><div class="v" id="b-w">–</div><div class="s" id="b-w-s">&nbsp;</div></div>
+      <div class="tile"><div class="k">BMI</div><div class="v" id="b-bmi">–</div><div class="s" id="b-bmi-s">&nbsp;</div></div>
+      <div class="tile"><div class="k">Body fat</div><div class="v" id="b-bf">–</div><div class="s" id="b-bf-s">&nbsp;</div></div>
+      <div class="tile"><div class="k">Muscle mass</div><div class="v" id="b-mm">–</div><div class="s" id="b-mm-s">&nbsp;</div></div>
+    </div>
+    <p class="small muted" id="body-note" style="margin:10px 0 0">Step on the scale before your morning run. A drop of 1.5% or more overnight counts as a dehydration flag.</p>
+  </div>
+</section>
+
+<section class="card">
+  <h2>The program</h2>
+  <p class="small muted" style="margin:4px 0 0">Tap a bar to open that week. Every Garmin step ends by distance, so you get a lap each km without pressing Lap.</p>
+  <div class="vol" id="vol" role="group" aria-label="Weekly kilometres, tap to pick a week"></div>
+  <div class="legend"><span><i class="p1"></i>Base</span><span><i class="p2"></i>Aerobic strength</span><span><i class="p3"></i>Marathon-specific</span><span><i class="p4"></i>Taper</span><span>Darker fill = km you ran</span></div>
+  <div class="weeknav">
+    <button id="prev" aria-label="Previous week">‹</button>
+    <div class="wt"><div class="a" id="w-title">–</div><div class="b2" id="w-sub">–</div></div>
+    <button id="next" aria-label="Next week">›</button>
+  </div>
+  <div class="wactions">
+    <button id="jump">Go to this week</button>
+    <button id="copy" class="primary">Copy week as Trello checklist</button>
+    <span class="small muted" id="copymsg" style="align-self:center"></span>
+  </div>
+  <div class="daygrid" id="days"></div>
+</section>
+
+<section class="card">
+  <h2>Heart-rate zones</h2>
+  <p class="small muted" style="margin:4px 0 6px">Your Garmin running zones (max 198). Each day card names its target zone. The morning check reads your time in each zone from yesterday's run.</p>
+  <div class="zrow"><i style="background:#6B7190">Z1</i><b class="n">99–118</b><span>Warm-up, cool-down, recovery jogs</span></div>
+  <div class="zrow"><i style="background:#008F5A">Z2</i><b class="n">119–138</b><span>Easy runs and most of every long run. 80% of your week belongs here.</span></div>
+  <div class="zrow"><i style="background:#3D5AFE">Z3</i><b class="n">139–157</b><span>Marathon-pace blocks and the end of long runs. Not for easy days.</span></div>
+  <div class="zrow"><i style="background:#F0431F">Z4</i><b class="n">158–177</b><span>Threshold reps on the track</span></div>
+  <div class="zrow"><i style="background:#D6006F">Z5</i><b class="n">178+</b><span>VO2 reps and the last km of a race</span></div>
+  <ul class="plain">
+    <li>If more than a quarter of an easy run was in Z3 or higher, the next morning counts one amber flag and your next easy run is capped at 135 bpm.</li>
+    <li>If threshold reps drift into Z5, the Sunday review slows threshold pace by 3 s/km. If they sit low in Z4 two weeks running, paces get faster.</li>
+    <li>Short reps (200–400 m) stay on pace targets, because heart rate lags too far behind to steer them.</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h2>Fuel <span class="brand">Maurten</span> <span class="brand">LMNT</span></h2>
+  <p class="small muted" style="margin:6px 0 0">Gel 100 = 25 g carbs · Gel 160 = 40 g carbs · Gel 100 CAF 100 = 25 g carbs + 100 mg caffeine · LMNT stick = 1,000 mg sodium, 200 mg potassium, 60 mg magnesium. Every day card shows what to take.</p>
+  <h3 style="margin-top:16px">Race day, 3:09 target</h3>
+  <div class="timeline">
+    <div><b>−3 h</b><span>Breakfast you have tested, plus 1 LMNT in 500–750 ml</span></div>
+    <div><b>−15 min</b><span>Gel 100 CAF 100</span></div>
+    <div><b>0:25</b><span>Gel 160</span></div>
+    <div><b>0:50</b><span>Gel 160</span></div>
+    <div><b>1:15</b><span>Gel 100 CAF 100</span></div>
+    <div><b>1:40</b><span>Gel 160</span></div>
+    <div><b>2:05</b><span>Gel 160</span></div>
+    <div><b>2:30</b><span>Gel 100 CAF 100</span></div>
+    <div><b>2:50</b><span>Gel 100, only if your stomach is happy</span></div>
+  </div>
+  <p class="small" style="margin:10px 0 0"><b>Totals:</b> 4 Gel 160, 3 Gel 100 CAF 100, 1 Gel 100. About 235 g of carbs on course (roughly 75 g an hour) and 300 mg of caffeine. Water at every aid station. Carry 1 LMNT in a soft flask for the first half.</p>
+  <h3 style="margin-top:16px">Training</h3>
+  <ul class="plain">
+    <li><b>Easy runs under 60 min:</b> no gels. Half an LMNT in 500 ml before or after.</li>
+    <li><b>Track:</b> 1 Gel 100 and 1 LMNT in 500 ml, 20–30 min before. Nothing during.</li>
+    <li><b>Long runs up to 16 km:</b> 1 Gel 100 at 45 min.</li>
+    <li><b>18–22 km:</b> Gel 100 every 35 min.</li>
+    <li><b>24–30 km:</b> Gel 100 every 30 min, the third one CAF 100.</li>
+    <li><b>32 km and up, or any marathon-pace block:</b> race rehearsal. Gel 160 every 25 min, the third and sixth CAF 100.</li>
+    <li><b>LMNT on long runs:</b> 1 stick before, then 1 per 75 min of running in 500–750 ml. Add one on sauna days.</li>
+    <li><b>Caffeine:</b> 300 mg on race day is about 4.5 mg per kg for you. Count your coffee too and stay near 400 mg for the day. Practise it on long runs first.</li>
+  </ul>
+  <p class="small muted" style="margin:10px 0 0">The step up to 75 g an hour needs training too. If you have been told to limit salt or caffeine, check this with your doctor.</p>
+</section>
+
+<section class="card">
+  <h2>Strength and drills</h2>
+  <p class="small muted" style="margin:4px 0 0">Monday strength takes 30 minutes. Drills go before each track session, after the warm-up.</p>
+  <h3 style="margin-top:14px">Monday strength</h3>
+  <div class="exgrid" id="ex-strength"></div>
+  <h3 style="margin-top:18px">Track drills, 2 × 20 m each</h3>
+  <div class="exgrid" id="ex-drills"></div>
+</section>
+
+<section class="card">
+  <h2>Recovery kit, week at a glance</h2>
+  <p class="small muted" style="margin:4px 0 0">Each day card has its own checklist. This is the pattern behind it.</p>
+  <div class="kit">
+    <div><b>RecoveryAir Prime boots</b>Tue, Fri 30 min · Sun 45–60 min after the long run · any amber or red day</div>
+    <div><b>Nuvio cold plunge</b>Sun after long runs of 24 km+ (8–10 min, 10–13°C) · Mon contrast with sauna. Not within 6 h after track.</div>
+    <div><b>LifePro sauna</b>Mon and Wed, 20 min after training, drink 500 ml with electrolytes. Never the day before the long run. None in race week.</div>
+    <div><b>Red light LED</b>10–15 min on legs, evenings of track and long-run days</div>
+    <div><b>Theragun Mini</b>30 s per muscle before quality sessions · 90 s per muscle on track evenings</div>
+    <div><b>Wave Roller</b>5–8 min after every run: calves, quads, glutes, IT band area</div>
+    <div><b>Wave Solo</b>Daily, 3 min: arches, plantar fascia, glute trigger points</div>
+    <div><b>Revo cupping</b>Mon (and Thu on rest days): calves and hamstrings, 8–10 min. Skip in the last 5 days before the race.</div>
+    <div><b>Airofit</b>10 min in the evening, 5 days a week. Never the morning of track or long run. Light only in race week.</div>
+  </div>
+</section>
+
+<section class="two">
+  <div class="card">
+    <h2>Where to run</h2>
+    <ul class="plain">
+      <li><b>Tropical Park track</b> (Tue, Fri 5:30am). Flat, elevation counted as 0 m. Use the Track Run profile so laps snap to 400 m. Pace targets are trusted here.</li>
+      <li><b>Key Biscayne</b> (long runs). The only real climb is the Powell Bridge on the Rickenbacker, about 20–25 m per crossing. Reviews count that and ignore the rest of the GPS elevation.</li>
+      <li><b>Brickell</b> (easy and recovery). Towers bounce the GPS, so pace and elevation jump around. Easy runs here are heart-rate only and reviews treat Brickell as flat.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2>Paces per km</h2>
+    <div class="tw"><table><thead><tr><th>Phase</th><th>Marathon</th><th>Threshold</th><th>VO2</th><th>Speed</th></tr></thead><tbody id="paces"></tbody></table></div>
+    <p class="small muted" style="margin:10px 0 0">Heart rate: easy 119–138 · long run 125–145 · threshold 177 · max 198</p>
+  </div>
+</section>
+
+<section class="two">
+  <div class="card">
+    <h2>How it adjusts itself</h2>
+    <ul class="plain">
+      <li><span class="chip green">GREEN</span> Readiness 60+, HRV in range, Body Battery 60+. Run as planned.</li>
+      <li><span class="chip amber">AMBER</span> Readiness 40–59, HRV 10% under your 7-day average, Body Battery 35–59, under 6 h sleep, or weight down 1.5% overnight. Reps cut by a quarter, easy runs by 20%.</li>
+      <li><span class="chip red">RED</span> Readiness under 40, two amber flags, or resting heart rate up 7 bpm. Rest or 30 min very easy. The session moves to the next free day.</li>
+      <li><b>Heat.</b> Temperature °F plus dew point °F at run time: up to 120 no change, then pace targets slow 1% to 5%. Above 160, treadmill.</li>
+      <li><b>Holidays.</b> No sessions on Thanksgiving, Christmas Day or New Year's Day. Friday track moves to Thursday those weeks.</li>
+      <li><b>Watch alerts.</b> Every work step has a pace or heart-rate range, so the watch buzzes and shows too fast, too slow, high or low as soon as you leave it. Recovery jogs have no range on purpose.</li>
+      <li><b>Sunday 2:17pm review.</b> Grades the week after your long run, reshapes the next weeks, and syncs 14 days to Garmin.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2>Adjustment log</h2>
+    <div id="log"><p class="small muted">Nothing yet. The first morning check for the plan runs Mon 23 Nov at 4:45am.</p></div>
+  </div>
+</section>
+</div>
+<dialog id="exdlg" aria-labelledby="exdlg-t"><div class="dl">
+  <div class="top"><h2 id="exdlg-t"></h2><button id="exdlg-x" aria-label="Close">Close</button></div>
+  <div id="exdlg-b" style="display:grid;gap:10px"></div>
+</div></dialog>
+
+<script>
+(async function(){
+const $=id=>document.getElementById(id);
+const RACE=new Date("2027-04-25T07:00:00-07:00");
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const todayISO=iso(new Date());
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=s=>new Date(s+"T12:00:00").toLocaleDateString(undefined,{day:"numeric",month:"short"});
+const TYPE={track:"Track",long:"Long run",easy:"Easy",recovery:"Recovery",rest:"Rest",race:"Race"};
+let PLAN,WEEKS={},DAILY={},STATUS=null,SEL=null,BODY=null;
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+try{PLAN=await (await fetch("plan.json")).json();}catch(e){$("syncstatus").textContent="Could not load the plan file. Reload the page.";return;}
+PLAN.weeks.forEach(w=>WEEKS[w.id]=w);
+const sorted=()=>Object.values(WEEKS).sort((a,b)=>a.week-b.week);
+const started=()=>todayISO>=PLAN.weeks[0].start;
+function curWeek(){let c=null;for(const w of sorted()) if(w.start<=todayISO) c=w;return c||WEEKS.W01;}
+function findDay(d){for(const w of sorted()) for(const x of w.days) if(x.date===d) return {w,d:x};return null;}
+
+function stepLines(steps){
+  const tg=t=>!t?"":(t[0]==="hr"?"HR "+t[1]+"–"+t[2]:t[1]+"–"+t[2]+" /km");
+  const dist=m=>m>=1000?(m/1000)+" km":m+" m";
+  const out=[];
+  for(const s of steps||[]){
+    if(s.rep){const w=s.steps.find(x=>x.k!=="recovery"),r=s.steps.find(x=>x.k==="recovery");
+      out.push(`<b>${s.rep} × ${dist(w.d*(w.n||1))}</b> at ${tg(w.tgt)}${r?(r.tgt?`, then ${dist(r.d*(r.n||1))} easy`:`, ${dist(r.d)} jog`):""}`);}
+    else{const km=dist(s.d*s.n);const lab=s.k==="warmup"?"Warm-up":s.k==="cooldown"?"Cool-down":(s.tgt&&s.tgt[0]==="pace"?"At pace":"Easy");
+      out.push(`<b>${lab} ${km}</b> · ${tg(s.tgt)}`);}
+  }
+  return out;
+}
+function place(d){
+  if(d.type==="race") return d.title.includes("EUGENE")?"Eugene, Oregon":"Race course";
+  if(d.type==="track") return d.holiday||/Moved from/.test(d.adjustNote||"")?"Tropical Park or any track":"Tropical Park track · 5:30am";
+  if(d.type==="long") return "Key Biscayne · count the bridge, ignore other GPS elevation";
+  if(d.type==="easy"||d.type==="recovery") return "Brickell or treadmill · heart rate only";
+  return "";
+}
+// Recovery checklist by day type. An agent can override with day.recovery (array of strings).
+function recovery(d,w){
+  if(Array.isArray(d.recovery)&&d.recovery.length) return d.recovery;
+  const dt=new Date(d.date+"T12:00:00");const daysToRace=Math.round((new Date("2027-04-25T12:00:00")-dt)/864e5);
+  const r=[];const air=daysToRace<=6?"Airofit: 5 min light breathing, evening":"Airofit: 10 min, evening";
+  if(d.type==="race"&&daysToRace===0) return ["Before: Theragun Mini 30 s each on calves, quads, glutes","After: walk 10 min, eat and drink first","Later: RecoveryAir boots 45–60 min","Evening: cold plunge 8 min or cool bath, red light 15 min","No sauna today"];
+  if(daysToRace>0&&daysToRace<=3){
+    return ["Wave Solo: 3 min on arches and glutes","RecoveryAir boots: 20 min, low pressure","Red light: 10 min on legs","No sauna, cold plunge or cupping until after the race"].concat(daysToRace>=2?[air]:[]);
+  }
+  if(d.type==="track"||d.type==="race"){
+    r.push("Before: Theragun Mini 30 s each on calves, quads, glutes");
+    r.push("After: Wave Roller 8 min (calves, quads, glutes)");
+    r.push("Afternoon: RecoveryAir boots 30 min");
+    r.push("Evening: Theragun Mini 90 s per muscle, then red light 10–15 min on legs");
+    r.push("Skip the cold plunge for 6 h after this session");
+  }else if(d.type==="long"){
+    r.push("Before: Theragun Mini 30 s each on calves, quads, glutes");
+    r.push(d.km>=24?"Within 1 h: cold plunge 8–10 min at 10–13°C":"After: cold plunge 5 min (optional)");
+    r.push("Afternoon: RecoveryAir boots "+(d.km>=24?"45–60":"30")+" min");
+    r.push("Evening: Wave Roller 5 min light, red light 15 min on legs");
+    r.push("No sauna or cupping today");
+  }else if(d.type==="easy"){
+    r.push("After: Wave Roller 5 min");
+    if(d.dow==="Wed"&&daysToRace>6) r.push("Sauna 20 min after the run, drink 500 ml with electrolytes");
+    if(d.dow==="Sat") r.push("No sauna today (long run tomorrow). Red light 10 min, early night.");
+    else r.push("Red light: 10 min on legs");
+  }else{ // rest / recovery
+    if(d.holiday){ r.push("Holiday: Wave Roller 5 min and a 20 min walk are plenty"); }
+    else if(d.dow==="Mon"){
+      if(d.type==="rest") r.push("Strength 30 min: single-leg squats, RDLs, calf raises, core");
+      if(daysToRace>6) r.push("Sauna 20–25 min, then cold plunge 3 min");
+      if(daysToRace>5) r.push("Revo cupping: calves and hamstrings, 8–10 min");
+      r.push("RecoveryAir boots 30 min");
+    }else{
+      r.push("Morning: cold plunge 5 min (optional)");
+      if(daysToRace>5) r.push("Revo cupping: calves and hamstrings, 8 min");
+      r.push("Mobility 15 min, red light 10 min");
+    }
+  }
+  r.push("Wave Solo: 3 min on arches and glutes");
+  if(d.dow!=="Sun"&&d.dow!=="Sat") r.push(air);
+  return r;
+}
+function zoneOf(d){
+  if(d.type==="rest")return "";
+  if(d.type==="easy")return "Z2 · 119–138";
+  if(d.type==="recovery")return "Z1–Z2 · under 132";
+  if(d.type==="long")return /MP/.test(d.title)?"Z2, then Z3 on the pace block":"Z2 · up to 145 late";
+  if(d.type==="race")return d.title.includes("EUGENE")?"Z3–Z4, Z5 only after 38 km":"Z4";
+  if(/ T$/.test(d.title))return "Reps in Z4 · 158–177";
+  if(/ I$/.test(d.title))return "Reps reach Z5 · 178+";
+  if(/ MP$/.test(d.title))return "Reps in Z3–low Z4";
+  return "By pace, not heart rate";
+}
+function fuel(d){
+  const z={text:"",g100:0,g160:0,caf:0,l:0};
+  if(d.type==="rest")return z;
+  if(d.type==="easy"||d.type==="recovery")return {...z,text:"No gels. Half an LMNT in 500 ml.",l:.5};
+  if(d.type==="track")return {...z,text:"Before: 1 Gel 100 + 1 LMNT in 500 ml. Nothing during.",g100:1,l:1};
+  if(d.type==="race"&&d.title.includes("EUGENE"))return {...z,text:"Race plan: 4 Gel 160, 3 CAF 100, 1 Gel 100, 2 LMNT.",g160:4,caf:3,g100:1,l:2};
+  if(d.type==="race")return {...z,text:"CAF 100 15 min before, Gel 160 at 30 and 60 min. 1 LMNT before.",caf:1,g160:2,l:1};
+  const min=d.km*5.4,l=1+Math.floor(min/75),hasMP=/MP/.test(d.title);
+  if(d.km<=16)return {...z,text:"1 Gel 100 at 45 min. 1 LMNT before.",g100:1,l:1};
+  if(d.km<=22){const n=Math.floor(min/35);return {...z,text:n+" Gel 100, one every 35 min. "+l+" LMNT.",g100:n,l};}
+  if(d.km<32&&!hasMP){const n=Math.floor((min-5)/30);return {...z,text:(n-1)+" Gel 100 + 1 CAF 100 (the third), one every 30 min. "+l+" LMNT.",g100:n-1,caf:1,l};}
+  const n=Math.floor((min-5)/25),c=n>=6?2:1;
+  return {...z,text:"Race rehearsal: "+(n-c)+" Gel 160 + "+c+" CAF 100 ("+(c===2?"third and sixth":"the third")+"), one every 25 min. "+l+" LMNT.",g160:n-c,caf:c,l};
+}
+function weekFuel(w){const t={g100:0,g160:0,caf:0,l:0};for(const d of w.days){const f=fuel(d);for(const k in t)t[k]+=f[k];}
+  return [t.g100&&t.g100+" Gel 100",t.g160&&t.g160+" Gel 160",t.caf&&t.caf+" CAF 100",t.l&&Math.ceil(t.l)+" LMNT"].filter(Boolean).join(" · ");}
+// original stick-figure thumbnails: h = head centre, l = limb polylines, b = boxes/props
+const FIG={
+ split:{h:[45,13],l:[[45,19,47,42],[47,42,63,47,61,68],[47,42,37,58,23,52],[45,25,54,36]],b:[[12,52,16,18]]},
+ rdl:{h:[23,33],l:[[29,35,56,40],[56,40,57,56,56,70],[56,40,74,36,90,31],[34,36,34,54]],c:[[34,58,4]]},
+ calf:{h:[46,11],l:[[46,17,46,42],[46,42,46,58,45,63],[45,63,52,68],[46,23,56,32,66,30]],b:[[48,68,24,6],[66,8,3,60]]},
+ cope:{h:[15,39],l:[[21,43,48,42,70,38],[21,43,21,62,33,62],[48,42,66,57]],b:[[62,40,30,6]]},
+ bug:{h:[23,59],l:[[29,62,58,62],[34,62,30,40],[34,62,14,56],[58,62,64,44,79,44],[58,62,86,55]]},
+ bridge:{h:[15,63],l:[[21,66,50,47,69,50,73,68],[21,66,42,68]]},
+ side:{h:[17,35],l:[[23,41,86,67],[23,41,23,64,36,64],[26,42,31,23]]},
+ askip:{h:[50,11],l:[[50,17,50,42],[50,42,50,58,50,72],[50,42,65,42,65,58],[50,23,42,33,46,42],[50,23,59,30,63,21]]},
+ bskip:{h:[50,11],l:[[50,17,50,42],[50,42,50,58,50,72],[50,42,65,44,82,50],[50,23,42,33,46,42],[50,23,59,30,63,21]]},
+ butt:{h:[51,11],l:[[50,17,49,42],[49,42,50,58,50,72],[49,42,52,58,39,50],[50,23,42,32,47,40],[50,23,58,31,62,24]]},
+ stride:{h:[49,13],l:[[47,19,50,42],[50,42,65,49,63,67],[50,42,39,56,24,51],[48,25,39,33,43,42],[48,25,58,33,64,25]]}
+};
+function fig(k){const f=FIG[k];let s=`<svg viewBox="0 0 100 80" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="74" x2="94" y2="74" stroke="var(--line)" stroke-width="2"/>`;
+  for(const b of f.b||[])s+=`<rect x="${b[0]}" y="${b[1]}" width="${b[2]}" height="${b[3]}" rx="2" fill="var(--brand)" stroke="none" opacity=".55"/>`;
+  for(const l of f.l){let p="";for(let i=0;i<l.length;i+=2)p+=l[i]+","+l[i+1]+" ";s+=`<polyline points="${p.trim()}"/>`;}
+  for(const c of f.c||[])s+=`<circle cx="${c[0]}" cy="${c[1]}" r="${c[2]}" fill="var(--track)" stroke="none"/>`;
+  return s+`<circle cx="${f.h[0]}" cy="${f.h[1]}" r="6" fill="currentColor" stroke="none"/></svg>`;}
+const EX={strength:[
+ ["split","Rear-foot split squat","3 × 8 each leg",["Back foot on a bench, front foot far enough forward that the knee stays over the mid-foot","Lower straight down for 3 seconds until the back knee nearly touches","Drive up through the front heel"],"Common miss: leaning forward and pushing off the back leg"],
+ ["rdl","Single-leg deadlift","3 × 8 each leg",["Stand on one leg with a soft knee, weight in the opposite hand","Hinge at the hip, back leg and torso moving as one line","Stop when your back is level, squeeze the glute to stand"],"Common miss: opening the hip so the toes point sideways"],
+ ["calf","Single-leg calf raise","3 × 15 each leg",["Ball of the foot on a step, fingertips on a wall","Rise for 1 second, hold 1 second at the top","Lower for 3 seconds below the step edge"],"Common miss: bouncing. Add weight once 15 is easy"],
+ ["cope","Copenhagen plank","3 × 20 s each side",["Lie on your side, top leg on a bench at the knee or ankle","Lift the hips so the body is one straight line","Bring the bottom leg up to meet the bench"],"Common miss: hips sagging. Start with the knee on the bench"],
+ ["bug","Dead bug","3 × 8 each side",["On your back, arms up, knees and hips at 90°","Press the lower back into the floor","Lower the opposite arm and leg slowly, return, switch"],"Common miss: the lower back lifting off the floor"],
+ ["bridge","Single-leg glute bridge","3 × 10 each leg",["On your back, one foot planted, other knee to the chest","Push through the heel until hips, knee and shoulder line up","Hold 2 seconds, lower slowly"],"Common miss: feeling it in the hamstring. Bring the foot closer"],
+ ["side","Side plank","3 × 30 s each side",["Elbow under the shoulder, feet stacked","Lift the hips into a straight line from head to feet","Keep the top hip pointing at the ceiling"],"Common miss: rolling the chest toward the floor"]],
+ drills:[
+ ["askip","A-skip","2 × 20 m",["Skip forward, driving one knee to hip height","Toe pulled up, foot lands under the hip","Opposite arm swings with each knee"],"Stay tall. Quick ground contact matters more than distance"],
+ ["bskip","B-skip","2 × 20 m",["Start like an A-skip","At the top, extend the lower leg forward","Paw the foot back down under the hip"],"Keep the hips high, do not lean back"],
+ ["butt","Butt kicks","2 × 20 m",["Run on the spot moving slowly forward","Heel comes straight up under the glute","Knee lifts slightly forward, not straight down"],"Short fast steps, relaxed shoulders"],
+ ["stride","Strides","4–6 × 100 m",["Build smoothly for 30 m to about 5 km effort","Hold fast and relaxed for 40 m","Coast down for 30 m, walk back"],"These are not sprints. Finish feeling you could do more"]]};
+function renderEx(){for(const g of ["strength","drills"])$("ex-"+g).innerHTML=EX[g].map(e=>`<div class="ex" id="tut-${e[0]}">${fig(e[0])}<h3>${e[1]}</h3><div class="dose">${e[2]}</div><ol>${e[3].map(x=>`<li>${x}</li>`).join("")}</ol><div class="miss">${e[4]}</div><a href="https://www.youtube.com/results?search_query=${encodeURIComponent(e[1]+" exercise for runners technique")}" target="_blank" rel="noopener">Watch a video demo</a></div>`).join("");}
+const SHORT={split:"Split squat",rdl:"Single-leg deadlift",calf:"Calf raise",cope:"Copenhagen",bug:"Dead bug",bridge:"Glute bridge",side:"Side plank",askip:"A-skip",bskip:"B-skip",butt:"Butt kicks",stride:"Strides"};
+const DOSE={};
+for(const g in EX)for(const e of EX[g])DOSE[e[0]]=e[2].replace(' each leg','/leg').replace(' each side','/side');
+function minis(d){
+  const race=Math.round((new Date("2027-04-25T12:00:00")-new Date(d.date+"T12:00:00"))/864e5);
+  let head="",keys=[];
+  if(d.type==="track"){head="Warm-up drills, after the 3 km jog";keys=["askip","bskip","butt","stride"];}
+  else if(d.dow==="Mon"&&!d.holiday&&race>6&&(d.type==="rest"||d.type==="recovery")){head="Strength, 30 min";keys=["split","rdl","calf","cope","bug","bridge","side"];}
+  else if(/strides/i.test(d.title)){head="After the run";keys=["stride"];}
+  if(!keys.length)return "";
+  return `<div class="minihead">${head}</div><div class="minis">${keys.map(k=>`<button data-ex="${k}" aria-label="${SHORT[k]}, open tutorial">${fig(k)}<span class="nm">${SHORT[k]}</span><span class="ds">${DOSE[k]||""}</span></button>`).join("")}</div>`;
+}
+function zoneBadges(d){
+  const b=(n)=>`<span class="zb z${n}" title="Heart-rate zone ${n}">Z${n}</span>`;
+  if(d.type==="rest")return "";
+  if(d.type==="easy")return b(2);
+  if(d.type==="recovery")return b(1);
+  if(d.type==="long")return /MP/.test(d.title)?b(2)+b(3):b(2);
+  if(d.type==="race")return d.title.includes("EUGENE")?b(3)+b(4):b(4);
+  if(/ T$/.test(d.title))return b(4);
+  if(/ I$/.test(d.title))return b(5);
+  if(/ MP$/.test(d.title))return b(3);
+  return `<span class="zb zp" title="Run by pace">Pace</span>`;
+}
+function openEx(k){
+  let e=null;for(const g in EX)for(const x of EX[g])if(x[0]===k)e=x;if(!e)return;
+  const dlg=$("exdlg");$("exdlg-t").textContent=e[1];
+  $("exdlg-b").innerHTML=`${fig(k)}<div class="dose">${e[2]}</div><ol>${e[3].map(x=>`<li>${x}</li>`).join("")}</ol><div class="small muted">${e[4]}</div><a href="https://www.youtube.com/results?search_query=${encodeURIComponent(e[1]+" exercise for runners technique")}" target="_blank" rel="noopener">Watch a video demo</a>`;
+  if(typeof dlg.showModal==="function"){if(!dlg.open)dlg.showModal();}
+  else{const t=$("tut-"+k);if(t)t.scrollIntoView({block:"center"});}
+}
+function flagChip(f){return f?`<span class="chip ${esc(f)}">${esc(f.toUpperCase())}</span>`:"";}
+function dayCard(d,w,big){
+  const isT=d.date===todayISO;const daily=DAILY[d.date];
+  const rec=recovery(d,w);
+  const checks=rec.map((t,i)=>{const k="rc:"+d.date+":"+i;const m=t.match(/^([^:]{2,22}):\s*(.*)$/);
+    return `<label><input type="checkbox" id="c-${d.date}-${i}${big?"-t":""}" data-k="${k}" ${store.get(k)==="1"?"checked":""}><span>${m?`<b>${esc(m[1])}:</b> ${esc(m[2])}`:esc(t)}</span></label>`;}).join("");
+  const steps=stepLines(d.steps).map(s=>`<li>${s}</li>`).join("");
+  const sync=d.status==="done"?`<span class="chip green">Done</span>`:d.status==="missed"?`<span class="chip red">Missed</span>`:d.garminWorkoutId?`<span class="chip line">On Garmin</span>`:"";
+  return `<article class="day t-${esc(d.type)} ${isT?"today":""}"><div class="bar"></div><div class="in">
+    <div class="dhead"><span class="dwhen">${esc(d.dow)} ${fmt(d.date)}${isT?" · today":""}</span><span style="display:flex;gap:6px;flex-wrap:wrap">${daily&&isT?flagChip(daily.flag):""}${sync}<span class="chip t-${esc(d.type)}">${TYPE[d.type]||esc(d.type)}</span></span></div>
+    <div class="dtitle"><h3>${esc(d.title)}</h3><span class="kmz">${zoneBadges(d)}${d.km?`<span class="km">${d.km}<small> km</small></span>`:""}</span></div>
+    ${d.adjustNote?`<div class="adj">Adjusted: ${esc(d.adjustNote)}</div>`:""}
+    ${steps?`<ul class="steps">${steps}</ul>`:""}
+    ${minis(d)}
+    ${zoneOf(d)?`<div class="where"><span class="zone">Heart rate:</span> ${esc(zoneOf(d))}</div>`:""}
+    ${place(d)?`<div class="where">${esc(place(d))}</div>`:""}
+    ${fuel(d).text?`<div class="fuel">Fuel: ${esc(fuel(d).text)}</div>`:""}
+    <details class="more" ${big?"open":""}><summary>Recovery checklist</summary><div class="checks">${checks}</div></details>
+    ${d.desc?`<details class="more"><summary>Coach notes</summary><p class="small muted" style="margin:6px 0 0">${esc(d.desc)}</p></details>`:""}
+  </div></article>`;
+}
+function renderHero(){
+  $("countdown").textContent=Math.max(0,Math.ceil((RACE-new Date())/864e5));
+  const w=started()?curWeek():WEEKS.W01;
+  $("curweek").textContent=started()?"Week "+w.week:"Starts 23 Nov";
+  $("curphase").textContent=w.phaseName;
+  $("curkm").textContent=(w.actualKm!=null?w.actualKm+" / ":"")+w.plannedKm;
+  $("curkmsub").textContent=w.actualKm!=null?"km run / planned":(started()?"km planned":"km in week 1");
+  const mp=PLAN.meta.paces[String(w.phase)].MP;$("mp").textContent=mp[0]+"–"+mp[1];
+}
+function renderToday(){
+  let f=findDay(todayISO);
+  if(!started()||!f){f=findDay(PLAN.weeks[0].start);$("todayhead").textContent="First day · Mon 23 Nov";}
+  $("today").innerHTML=dayCard(f.d,f.w,true);
+}
+function renderVol(){
+  const ws=sorted(),max=110,cur=curWeek().id;
+  $("vol").innerHTML=ws.map(w=>{const h=Math.round(w.plannedKm/max*100);const a=w.actualKm!=null?Math.min(100,Math.round(w.actualKm/w.plannedKm*100)):0;
+    return `<button data-w="${w.id}" class="${w.id===SEL?"sel":""} ${w.id===cur&&started()?"cur":""}" aria-label="Week ${w.week}, ${w.plannedKm} km planned" aria-pressed="${w.id===SEL}"><div class="b p${w.phase}" style="height:${h}%"><i style="height:${a}%"></i></div><div class="l">${w.week}</div></button>`;}).join("");
+}
+function renderWeek(){
+  const w=WEEKS[SEL];const end=new Date(w.start+"T12:00:00");end.setDate(end.getDate()+6);
+  $("w-title").textContent="Week "+w.week+" · "+(w.actualKm!=null?w.actualKm+" / ":"")+w.plannedKm+" km";
+  $("w-sub").textContent=fmt(w.start)+" – "+fmt(iso(end))+" · "+w.phaseName+(w.zoneSplit?" · "+w.zoneSplit.easyPct+"% easy zones":"")+(w.reviewNote?" · "+w.reviewNote:"")+" · Pack: "+weekFuel(w);
+  $("days").innerHTML=w.days.map(d=>dayCard(d,w,false)).join("");
+  $("prev").disabled=w.week===1;$("next").disabled=w.week===22;
+}
+function renderPaces(){
+  const names={1:"Base",2:"Aerobic",3:"Specific",4:"Taper"};
+  $("paces").innerHTML=Object.entries(PLAN.meta.paces).map(([k,v])=>`<tr><td>${names[k]}</td><td class="n">${v.MP[0]}–${v.MP[1]}</td><td class="n">${v.T[0]}–${v.T[1]}</td><td class="n">${v.I[0]}–${v.I[1]}</td><td class="n">${v.R[0]}–${v.R[1]}</td></tr>`).join("");
+}
+function renderLog(){
+  const rows=Object.values(DAILY).sort((a,b)=>a.date<b.date?1:-1).slice(0,14);
+  if(rows.length) $("log").innerHTML=rows.map(r=>`<div class="logrow"><b>${fmt(r.date)}</b><span>${flagChip(r.flag)}</span><span class="w">${esc(r.decision||"")}${r.heat?` <span class="muted">· ${esc(r.heat)}</span>`:""}</span></div>`).join("");
+  const t=DAILY[todayISO];if(t){$("m-flag").innerHTML=flagChip(t.flag);$("m-flag-s").textContent=t.decision||"";}
+}
+function renderBody(){
+  const b=BODY;if(!b) return;
+  if(b.weightKg!=null){$("b-w").textContent=b.weightKg.toFixed(1)+" kg";$("b-w-s").textContent=(b.avg7!=null?"7-day avg "+b.avg7.toFixed(1)+" kg":"")+(b.date?" · "+fmt(b.date):"");}
+  if(b.bmi!=null){$("b-bmi").textContent=b.bmi.toFixed(1);$("b-bmi-s").textContent="healthy range 18.5–24.9";}
+  if(b.bodyFatPct!=null){$("b-bf").textContent=b.bodyFatPct.toFixed(1)+"%";$("b-bf-s").textContent=(b.waterPct!=null?"water "+b.waterPct.toFixed(0)+"%":"")+(b.compDate?" · "+fmt(b.compDate):"");}
+  if(b.muscleKg!=null){$("b-mm").textContent=b.muscleKg.toFixed(1)+" kg";$("b-mm-s").textContent=b.boneKg!=null?"bone "+b.boneKg.toFixed(1)+" kg":"";}
+}
+function bodyFromGarmin(p){
+  const list=(p&&p.dateWeightList||[]).filter(x=>x.weight>0).sort((a,b)=>a.calendarDate<b.calendarDate?1:-1);
+  if(!list.length) return null;
+  const ws=list.map(x=>x.weight/1000).sort((a,b)=>a-b);const med=ws[Math.floor(ws.length/2)];
+  const ok=list.filter(x=>Math.abs(x.weight/1000-med)/med<=0.04);if(!ok.length) return null;
+  const last=ok[0];const comp=ok.find(x=>x.bodyFat>0);
+  const within=(n)=>{const lim=new Date(last.calendarDate+"T12:00:00");lim.setDate(lim.getDate()-n);return ok.filter(x=>new Date(x.calendarDate+"T12:00:00")>lim);};
+  const a7=within(7);const avg7=a7.reduce((s,x)=>s+x.weight,0)/a7.length/1000;
+  return {date:last.calendarDate,weightKg:last.weight/1000,bmi:last.bmi,avg7,bodyFatPct:comp?comp.bodyFat:null,waterPct:comp?comp.bodyWater:null,muscleKg:comp?comp.muscleMass/1000:null,boneKg:comp?comp.boneMass/1000:null,compDate:comp?comp.calendarDate:null};
+}
+function renderAll(){renderHero();renderEx();renderToday();renderVol();renderWeek();renderPaces();renderLog();renderBody();}
+SEL=(started()?curWeek():WEEKS.W01).id;
+renderAll();
+$("syncstatus").textContent="Showing the plan as built. Connecting to live adjustments…";
+
+document.addEventListener("click",e=>{const b=e.target.closest("button[data-ex]");if(b)openEx(b.dataset.ex);});
+$("exdlg-x").addEventListener("click",()=>$("exdlg").close());
+$("exdlg").addEventListener("click",e=>{if(e.target===$("exdlg"))$("exdlg").close();});
+$("vol").addEventListener("click",e=>{const b=e.target.closest("button[data-w]");if(!b)return;SEL=b.dataset.w;renderVol();renderWeek();});
+$("prev").addEventListener("click",()=>{const n=WEEKS[SEL].week-1;if(n>=1){SEL="W"+pad(n);renderVol();renderWeek();}});
+$("next").addEventListener("click",()=>{const n=WEEKS[SEL].week+1;if(n<=22){SEL="W"+pad(n);renderVol();renderWeek();}});
+$("jump").addEventListener("click",()=>{SEL=(started()?curWeek():WEEKS.W01).id;renderVol();renderWeek();});
+document.addEventListener("change",e=>{const t=e.target;if(t.matches&&t.matches("input[data-k]")){store.set(t.dataset.k,t.checked?"1":"0");document.querySelectorAll(`input[data-k="${t.dataset.k}"]`).forEach(x=>x.checked=t.checked);}});
+$("copy").addEventListener("click",async()=>{
+  const w=WEEKS[SEL];const lines=[];
+  for(const d of w.days){lines.push(`${d.dow} ${fmt(d.date)} · ${d.title}${d.km?" ("+d.km+" km)":""}`);if(fuel(d).text) lines.push(`${d.dow} fuel · ${fuel(d).text}`);for(const r of recovery(d,w)) lines.push(`${d.dow} recovery · ${r}`);}
+  try{await navigator.clipboard.writeText(lines.join("\n"));$("copymsg").textContent="Copied. Paste into a Trello checklist: each line becomes an item.";}
+  catch(err){$("copymsg").textContent="Copy was blocked here. Open the page in Claude and try again.";}
+});
+
+// live plan overrides + log, written by the morning and Sunday checks
+(async()=>{
+  const db=await claude.use("db");
+  if(!db){$("syncstatus").textContent="Showing the plan as built. Open this page in Claude while signed in to see automatic adjustments.";return;}
+  let got=false;const timer=setTimeout(()=>{if(!got)$("syncstatus").textContent="Live adjustments can't be reached right now. Showing the plan as built.";},10000);
+  db.collection("weeks").onSnapshot(s=>{
+    s.docs.forEach(doc=>{const v=doc.data();if(v&&v.days)WEEKS[doc.id]=v;});
+    if(!s.metadata.fromCache){got=true;clearTimeout(timer);}
+    $("syncstatus").textContent=(STATUS&&STATUS.headline?STATUS.headline:"Live plan connected.")+(STATUS&&STATUS.updatedAt?" Updated "+new Date(STATUS.updatedAt).toLocaleString(undefined,{weekday:"short",hour:"numeric",minute:"2-digit"})+".":"");
+    renderAll();
+  },e=>{clearTimeout(timer);$("syncstatus").textContent="Live adjustments are unavailable in this view. Showing the plan as built.";});
+  db.collection("daily").orderBy("date","desc").limit(21).onSnapshot(s=>{DAILY={};s.docs.forEach(d=>{const v=d.data();if(v&&v.date)DAILY[v.date]=v;});renderLog();renderToday();},()=>{});
+  db.doc("status/current").onSnapshot(s=>{if(s.exists){STATUS=s.data();if(!BODY&&STATUS.body){BODY=STATUS.body;renderBody();}
+    if(STATUS.headline)$("syncstatus").textContent=STATUS.headline+(STATUS.updatedAt?" Updated "+new Date(STATUS.updatedAt).toLocaleString(undefined,{weekday:"short",hour:"numeric",minute:"2-digit"})+".":"");}},()=>{});
+})();
+
+// live Garmin numbers
+(async()=>{
+  const mcp=await claude.use("mcp");
+  if(!mcp){$("live-note").textContent="Live Garmin numbers show when this page is open in Claude with the Garmin connector. The morning check still runs on its own.";return;}
+  const S="Garmin",t=todayISO,ago=n=>iso(new Date(Date.now()-n*864e5));
+  const err=(el,ev)=>{const c=ev.error&&ev.error.code;
+    $("live-note").textContent=c==="needs_reauth"?"Reconnect Garmin in claude.ai Settings → Connectors.":c==="server_not_connected"?"Add the Garmin connector in claude.ai Settings → Connectors.":(c==="approval_required"||c==="not_in_manifest")?"Allow this page to read Garmin to see live numbers.":"Garmin didn't answer just now. Numbers may be old.";
+    if(["needs_reauth","server_not_connected","blocked_by_policy","approval_required","not_in_manifest"].includes(c)&&el)$(el).textContent="–";};
+  const fresh=r=>{$("live-note").textContent="Live from Garmin"+(r.cache?", cached "+new Date(r.cache.storedAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"}):"")+". Sync your watch if numbers look old.";};
+  mcp.watchTool(S,"get_training_readiness",{date:t},ev=>{
+    if(ev.type==="error")return err("m-ready",ev);const p=ev.result.payload;fresh(ev.result);let score=null,level="";
+    const pick=o=>{if(!o||typeof o!=="object")return;if(Array.isArray(o)){o.forEach(pick);return;}
+      if(score==null)for(const k of["score","training_readiness_score","readiness_score"])if(typeof o[k]==="number"){score=o[k];break;}
+      if(!level)for(const k of["level","feedback_short","status"])if(typeof o[k]==="string"){level=o[k];break;}
+      Object.values(o).forEach(v=>{if(v&&typeof v==="object")pick(v);});};
+    if(typeof p!=="string")pick(p);
+    $("m-ready").textContent=score!=null?score:"–";$("m-ready-s").textContent=score!=null?String(level).replace(/_/g," ").toLowerCase():"No reading yet today";
+  },{refetchInterval:300000});
+  mcp.watchTool(S,"get_body_battery",{start_date:t,end_date:t},ev=>{
+    if(ev.type==="error")return err("m-bb",ev);let cur=null,hi=null,lo=null;
+    const walk=o=>{if(!o||typeof o!=="object")return;if(Array.isArray(o)){o.forEach(walk);return;}
+      for(const[k,v]of Object.entries(o)){if(typeof v==="number"){if(/most_recent|current|latest/i.test(k)&&cur==null)cur=v;if(/high|max|charged/i.test(k)&&hi==null)hi=v;if(/low|min|drained/i.test(k)&&lo==null)lo=v;}else if(v&&typeof v==="object")walk(v);}};
+    walk(ev.result.payload);
+    $("m-bb").textContent=cur!=null?cur:(hi!=null?hi:"–");$("m-bb-s").textContent=((hi!=null?"high "+hi:"")+(lo!=null?" · low "+lo:""))||"No data yet today";
+  },{refetchInterval:300000});
+  mcp.watchTool(S,"get_hrv_trend",{start_date:ago(7),end_date:t},ev=>{
+    if(ev.type==="error")return err("m-hrv",ev);const tr=(ev.result.payload&&ev.result.payload.trend)||[];
+    const last=[...tr].reverse().find(x=>x.last_night_avg_hrv_ms!=null);
+    if(!last){$("m-hrv").textContent="–";$("m-hrv-s").textContent="Wear the watch overnight";return;}
+    $("m-hrv").textContent=last.last_night_avg_hrv_ms+" ms";const wa=last.weekly_avg_hrv_ms;const df=wa?Math.round((last.last_night_avg_hrv_ms-wa)/wa*100):null;
+    $("m-hrv-s").textContent=(wa?"7-day "+wa+" ms ("+(df>=0?"+":"")+df+"%)":"")+" · "+fmt(last.date);
+  },{refetchInterval:900000});
+  mcp.watchTool(S,"get_body_composition",{start_date:ago(30),end_date:t},ev=>{
+    if(ev.type==="error")return err(null,ev);const b=bodyFromGarmin(ev.result.payload);if(b){BODY=b;renderBody();}
+  },{refetchInterval:1800000});
+})();
+})();
+</script>
+</body>
+</html>

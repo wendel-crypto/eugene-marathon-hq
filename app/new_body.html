@@ -1,0 +1,219 @@
+<body>
+<div class="appbar"><b id="ab-title">Today</b><span class="chip line" id="ab-chip"></span></div>
+<div class="wrap">
+<div class="view" id="v-today">
+<header class="hero">
+  <div class="eyebrow">Sun 25 Apr 2027 · 7:00am · Hayward Field</div>
+  <h1>Eugene Marathon Training HQ</h1>
+  <div class="herostats">
+    <div class="hs"><div class="k" data-ic="calendar">Race day in</div><div class="v" id="countdown">–</div><div class="s">days</div></div>
+    <div class="hs"><div class="k" data-ic="clock">Goal</div><div class="v">3:00–3:05</div><div class="s" id="mp">–</div></div>
+    <div class="hs"><div class="k" data-ic="flag">Now</div><div class="v" id="curweek">–</div><div class="s" id="curphase">–</div></div>
+    <div class="hs"><div class="k" data-ic="route">This week</div><div class="v" id="curkm">–</div><div class="s" id="curkmsub">km planned</div></div>
+  </div>
+</header>
+<div class="status" id="syncstatus">Loading plan…</div>
+<section class="card">
+  <div class="sech"><h2>Today's numbers</h2><span class="brand">Garmin</span></div>
+  <div class="gt">
+    <div class="g"><div class="k" data-ic="bolt">Training readiness</div><div class="ring" id="r-ready"></div><div class="s" id="m-ready-s">No reading yet</div></div>
+    <div class="g"><div class="k" data-ic="battery">Body Battery</div><div id="r-bb"></div><div class="s" id="m-bb-s">No reading yet</div></div>
+    <div class="g"><div class="k" data-ic="moon">Sleep</div><div class="ring" id="r-sleep"></div><div class="s" id="m-sleep-s">No reading yet</div></div>
+    <div class="g"><div class="k" data-ic="pulse">HRV last night</div><div class="big" id="m-hrv">–</div><svg class="spark" id="sp-hrv" viewBox="0 0 120 30" preserveAspectRatio="none" aria-hidden="true"></svg><div class="s" id="m-hrv-s">&nbsp;</div></div>
+    <div class="g"><div class="k" data-ic="heart">Resting heart rate</div><div class="big" id="m-rhr">–</div><svg class="spark" id="sp-rhr" viewBox="0 0 120 30" preserveAspectRatio="none" aria-hidden="true"></svg><div class="s" id="m-rhr-s">&nbsp;</div></div>
+    <div class="g"><div class="k" data-ic="trend">VO2 max</div><div class="big" id="m-vo2">–</div><svg class="spark" id="sp-vo2" viewBox="0 0 120 30" preserveAspectRatio="none" aria-hidden="true"></svg><div class="s" id="m-vo2-s">&nbsp;</div></div>
+    <div class="g"><div class="k" data-ic="scale">Weight</div><div class="big" id="b-w">–</div><svg class="spark" id="sp-w" viewBox="0 0 120 30" preserveAspectRatio="none" aria-hidden="true"></svg><div class="s" id="b-w-s">&nbsp;</div></div>
+    <div class="g"><div class="k" data-ic="target">Morning check</div><div class="big" id="m-flag">–</div><div class="s" id="m-flag-s">Runs daily at 4:45am</div></div>
+  </div>
+  <p class="small muted" id="live-note" style="margin:10px 0 0">Connecting to Garmin…</p>
+</section>
+<section class="todaywrap">
+  <h2 id="todayhead" style="margin-bottom:10px">Today</h2>
+  <div id="today"></div>
+</section>
+</div>
+<div class="view" id="v-plan" hidden>
+<section class="card">
+  <h2>The program</h2>
+  <div class="weeknav">
+    <button id="prev" aria-label="Previous week">‹</button>
+    <div class="wt"><div class="a" id="w-title">–</div><div class="b2" id="w-sub">–</div></div>
+    <button id="next" aria-label="Next week">›</button>
+  </div>
+  
+  <div class="daygrid" id="days"></div>
+</section>
+</div>
+<div class="view" id="v-stats" hidden>
+<section class="card">
+  <div class="sech"><h2>Am I on track?</h2><span id="ot-chip"></span></div>
+  <p class="small muted" id="ot-line" style="margin:4px 0 0">&nbsp;</p>
+  <div class="track">
+    <div class="kpis">
+      <div class="kpi"><div class="k">This week so far</div><div class="v" id="k-week">–</div><div class="pb"><i id="k-week-b"></i></div><div class="s" id="k-week-s">&nbsp;</div></div>
+      <div class="kpi"><div class="k">Plan km done</div><div class="v" id="k-cum">–</div><div class="pb"><i id="k-cum-b"></i></div><div class="s" id="k-cum-s">&nbsp;</div></div>
+      <div class="kpi"><div class="k">Marathon prediction</div><div class="v" id="k-pred">–</div><div class="pb"><i id="k-pred-b"></i></div><div class="s" id="k-pred-s">&nbsp;</div></div>
+      <div class="kpi"><div class="k">Body</div><div class="v" id="k-body">–</div><div class="s" id="k-body-s">&nbsp;</div></div>
+    </div>
+    <div>
+      <h3 style="margin-bottom:2px">Program progress</h3>
+      <div id="phases"></div>
+      <p class="small muted" style="margin:6px 0 0">Blue is km you have run. The dark marker is where the plan says you should be today.</p>
+    </div>
+  </div>
+</section>
+<section class="card">
+  <div class="sech"><h2>Trends</h2><span class="brand">Garmin</span></div>
+  <div class="charts">
+    <div class="ch" style="grid-column:1/-1"><h3>Weekly km, plan against what you ran</h3><div class="sub">Tap a bar to open that week. Grey weeks are before the plan started.</div>
+      <div class="vol" id="vol" role="group" aria-label="Weekly kilometres, tap to pick a week"></div>
+      <div class="lg"><span><i class="p"></i>Planned</span><span><i></i>Run</span></div></div>
+    <div class="ch"><h3>Total km since the plan started</h3><div class="now" id="c-cum-now">–</div><div id="c-cum"></div><div class="lg"><span><i class="p"></i>Planned</span><span><i></i>Run</span></div></div>
+    <div class="ch"><h3>Longest run each week</h3><div class="now" id="c-long-now">–</div><div id="c-long"></div><div class="lg"><span><i class="p"></i>Planned</span><span><i></i>Run</span></div></div>
+    <div class="ch"><h3>VO2 max, last 90 days</h3><div class="now" id="c-vo2-now">–</div><div id="c-vo2"></div></div>
+    <div class="ch"><h3>HRV overnight, last 30 days</h3><div class="now" id="c-hrv-now">–</div><div id="c-hrv"></div></div>
+    <div class="ch"><h3>Sleep score, last 14 nights</h3><div class="now" id="c-sleep-now">–</div><div id="c-sleep"></div></div>
+    <div class="ch"><h3>Weight, last 30 days</h3><div class="now" id="c-w-now">–</div><div id="c-w"></div></div>
+    <div class="ch"><h3>Race predictions today</h3><div id="c-pred"><p class="empty">No prediction loaded yet.</p></div></div>
+    <div class="ch"><h3>Time in heart-rate zones, last reviewed week</h3><div id="c-zones"><p class="empty">Arrives with the first Sunday review.</p></div></div>
+  </div>
+</section>
+</div>
+<div class="view" id="v-coach" hidden>
+<section class="coach">
+  <div class="card"><div class="sech"><h2 data-ic="chat">Coach on your last session</h2><span id="fb-score"></span></div><div id="fb-latest" class="fbk"><p class="empty">Feedback lands here after each run syncs from your watch. The first one comes after Tuesday's track session.</p></div></div>
+  <div class="card"><div class="sech"><h2 data-ic="calendar">Week summary</h2><span id="ws-chip"></span></div><div id="ws" class="fbk"><p class="empty">Written every Sunday at 2:17pm, after your long run. The first summary arrives Sun 29 Nov.</p></div></div>
+</section>
+<section class="card"><div class="sech"><h2 data-ic="chat">All session feedback</h2></div><div id="fb-list"><p class="empty">Each run you sync gets a short review here, newest first.</p></div></section>
+<section class="card"><div class="sech"><h2 data-ic="share">Share a run</h2></div><p class="small muted" style="margin:4px 0 10px">Make a card with your distance, time, pace and the coach's line, ready for Instagram or Strava.</p><div id="sh-recent"><p class="empty">Your runs appear here once Garmin loads.</p></div></section>
+</div>
+<div class="view" id="v-guide" hidden>
+<details class="ref"><summary><span data-ic="heart">Heart-rate zones</span></summary><div class="rb">
+  <p class="small muted" style="margin:0 0 6px">Your Garmin running zones (max 198). The checks read your time in each zone after every run.</p>
+  <div class="zrow"><i style="background:#6B7190">Z1</i><b class="n">99–118</b><span>Warm-up, cool-down, recovery jogs</span></div>
+  <div class="zrow"><i style="background:#008F5A">Z2</i><b class="n">119–138</b><span>Easy runs and most of every long run. 80% of your week belongs here.</span></div>
+  <div class="zrow"><i style="background:#3D5AFE">Z3</i><b class="n">139–157</b><span>Marathon-pace blocks and the end of long runs</span></div>
+  <div class="zrow"><i style="background:#F0431F">Z4</i><b class="n">158–177</b><span>Threshold reps on the track</span></div>
+  <div class="zrow"><i style="background:#D6006F">Z5</i><b class="n">178+</b><span>VO2 reps and the last km of a race</span></div>
+  <ul class="plain">
+    <li>If more than a quarter of an easy run was in Z3 or higher, the next morning counts one amber flag and your next easy run is capped at 135 bpm.</li>
+    <li>If threshold reps drift into Z5, the Sunday review slows threshold pace by 3 s/km.</li>
+    <li>Short reps (200–400 m) stay on pace targets because heart rate lags behind.</li>
+  </ul>
+</div></details>
+
+<details class="ref"><summary><span data-ic="gel">Fuel <span class="brand">Maurten</span> <span class="brand">LMNT</span></span></summary><div class="rb">
+  <p class="small muted" style="margin:0">Gel 100 = 25 g carbs · Gel 160 = 40 g carbs · Gel 100 CAF 100 = 25 g carbs + 100 mg caffeine · LMNT stick = 1,000 mg sodium, 200 mg potassium, 60 mg magnesium.</p>
+  <h3 style="margin-top:16px">Race day, 3:00–3:05</h3>
+  <div class="timeline">
+    <div><b>−3 h</b><span>Breakfast you have tested, plus 1 LMNT in 500–750 ml</span></div>
+    <div><b>−15 min</b><span>Gel 100 CAF 100</span></div>
+    <div><b>0:25</b><span>Gel 160</span></div>
+    <div><b>0:50</b><span>Gel 160</span></div>
+    <div><b>1:15</b><span>Gel 100 CAF 100</span></div>
+    <div><b>1:40</b><span>Gel 160</span></div>
+    <div><b>2:05</b><span>Gel 160</span></div>
+    <div><b>2:30</b><span>Gel 100 CAF 100</span></div>
+  </div>
+  <p class="small" style="margin:10px 0 0"><b>Totals:</b> 4 Gel 160 and 3 Gel 100 CAF 100. About 210 g of carbs on course (roughly 70 g an hour) and 300 mg of caffeine. Water at every aid station.</p>
+  <h3 style="margin-top:16px">Training</h3>
+  <ul class="plain">
+    <li><b>Easy runs under 60 min:</b> no gels. Half an LMNT in 500 ml.</li>
+    <li><b>Track:</b> 1 Gel 100 and 1 LMNT in 500 ml, 20–30 min before. Nothing during.</li>
+    <li><b>Long runs up to 16 km:</b> 1 Gel 100 at 45 min. <b>18–22 km:</b> Gel 100 every 35 min.</li>
+    <li><b>24–30 km:</b> Gel 100 every 30 min, the third one CAF 100.</li>
+    <li><b>32 km and up, or any marathon-pace block:</b> race rehearsal. Gel 160 every 25 min, the third and sixth CAF 100.</li>
+    <li><b>LMNT on long runs:</b> 1 stick before, then 1 per 75 min of running. Add one on sauna days.</li>
+    <li><b>Caffeine:</b> 300 mg on race day is about 4.5 mg per kg for you. Count coffee too and stay near 400 mg for the day.</li>
+  </ul>
+  <p class="small muted" style="margin:10px 0 0">If you have been told to limit salt or caffeine, check this with your doctor.</p>
+</div></details>
+
+<details class="ref"><summary><span data-ic="bolt">Strength and drills</span></summary><div class="rb">
+  <h3>Monday strength, 30 min</h3>
+  <div class="exgrid" id="ex-strength"></div>
+  <h3 style="margin-top:18px">Track drills, 2 × 20 m each</h3>
+  <div class="exgrid" id="ex-drills"></div>
+</div></details>
+
+<details class="ref"><summary><span data-ic="boot">Recovery kit</span></summary><div class="rb">
+  <div class="kit" style="margin-top:0">
+    <div data-ic="boot"><span><b>RecoveryAir Prime boots <span class="brand">Therabody</span></b>Tue, Fri 30 min · Sun 45–60 min after the long run · any amber or red day</span></div>
+    <div data-ic="snow"><span><b>Cold plunge <span class="brand">Nuvio</span></b>Sun after long runs of 24 km+ (8–10 min, 10–13°C) · Mon contrast with sauna. Not within 6 h after track.</span></div>
+    <div data-ic="flame"><span><b>Sauna <span class="brand">LifePro</span></b>Mon and Wed, 20 min after training, with 500 ml and electrolytes. Never the day before the long run. None in race week.</span></div>
+    <div data-ic="light"><span><b>Red light LED</b>10–15 min on legs, evenings of track and long-run days</span></div>
+    <div data-ic="bolt"><span><b>Theragun Mini <span class="brand">Therabody</span></b>30 s per muscle before quality sessions · 90 s per muscle on track evenings</span></div>
+    <div data-ic="roller"><span><b>Roller</b>5–8 min after every run: calves, quads, glutes</span></div>
+    <div data-ic="ball"><span><b>Roller Ball</b>Daily, 3 min: arches and glute trigger points</span></div>
+    <div data-ic="cup"><span><b>Cupping <span class="brand">Revo</span></b>Mon (and Thu on rest days): calves and hamstrings, 8–10 min. Skip in the last 5 days before the race.</span></div>
+    <div data-ic="wind"><span><b>Breathing trainer <span class="brand">Airofit</span></b>10 min in the evening, 5 days a week. Never the morning of track or long run.</span></div>
+  </div>
+</div></details>
+
+<details class="ref"><summary><span data-ic="route">Where to run</span></summary><div class="rb">
+  <ul class="plain" style="margin-top:0">
+    <li><b>Tropical Park track</b> (Tue, Fri 5:30am). Flat, counted as 0 m of climb. Use the Track Run profile so laps snap to 400 m.</li>
+    <li><b>Key Biscayne</b> (long runs). The only real climb is the Powell Bridge, about 20–25 m per crossing.</li>
+    <li><b>Brickell</b> (easy and recovery). Towers bounce the GPS, so these runs are judged by heart rate, never pace.</li>
+  </ul>
+</div></details>
+
+<details class="ref"><summary><span data-ic="clock">Paces per km</span></summary><div class="rb">
+  <div class="tw"><table style="margin-top:0"><thead><tr><th>Phase</th><th>Marathon</th><th>Threshold</th><th>VO2</th><th>Speed</th></tr></thead><tbody id="paces"></tbody></table></div>
+  <p class="small muted" style="margin:10px 0 0">These are targets for a 3:00–3:05 marathon. Each Sunday the review holds a pace back if it is more than your current fitness supports.</p>
+</div></details>
+
+<details class="ref"><summary><span data-ic="target">How the plan adjusts itself</span></summary><div class="rb">
+  <ul class="plain" style="margin-top:0">
+    <li><span class="chip green">GREEN</span> Readiness 60+, HRV in range, Body Battery 60+. Run as planned.</li>
+    <li><span class="chip amber">AMBER</span> Readiness 40–59, HRV 10% under your 7-day average, Body Battery 35–59, under 6 h sleep, weight down 1.5% overnight, or yesterday's easy run ran hot. Reps cut by a quarter, easy runs by 20%.</li>
+    <li><span class="chip red">RED</span> Readiness under 40, two amber flags, or resting heart rate up 7 bpm. Rest or 30 min very easy.</li>
+    <li><b>Heat.</b> Temperature °F plus dew point °F at run time: up to 120 no change, then pace targets slow 1% to 5%. Above 160, treadmill.</li>
+    <li><b>Holidays.</b> No sessions on Thanksgiving, Christmas Day or New Year's Day.</li>
+    <li><b>Session feedback.</b> Written after each run syncs, checked at 8:41am, 1:41pm and 8:41pm.</li>
+    <li><b>Sunday 2:17pm review.</b> Grades the week, writes the summary, reshapes the next weeks and syncs 14 days to Garmin.</li>
+    <li><b>Watch alerts.</b> Every work step has a pace or heart-rate range, so the watch buzzes when you leave it.</li>
+  </ul>
+</div></details>
+
+<details class="ref"><summary><span data-ic="calendar">Adjustment log</span></summary><div class="rb">
+  <div id="log"><p class="small muted" style="margin:0">Nothing yet. The first morning check for the plan runs Mon 23 Nov at 4:45am.</p></div>
+</div></details>
+
+</div>
+</div>
+
+<button class="fab" id="fab-share" aria-label="Share your latest run"></button>
+<button class="fab mini" id="fab-today" aria-label="Go to this week" hidden></button>
+<button class="fab mini" id="fab-top" aria-label="Back to top" hidden></button>
+
+<nav class="tabbar" aria-label="Sections">
+  <button data-go="today" data-ic="home"><span>Today</span></button>
+  <button data-go="plan" data-ic="calendar"><span>Plan</span></button>
+  <button data-go="stats" data-ic="trend"><span>Stats</span></button>
+  <button data-go="coach" data-ic="chat"><span>Coach</span></button>
+  <button data-go="guide" data-ic="book"><span>Guide</span></button>
+</nav>
+
+<dialog id="shdlg" aria-labelledby="sh-t"><div class="dl">
+  <div class="top"><h2 id="sh-t">Share your run</h2><button id="sh-x" aria-label="Close">Close</button></div>
+  <label class="small muted" for="sh-pick">Session</label>
+  <select id="sh-pick"></select>
+  <div class="seg" role="group" aria-label="Card shape"><button id="sh-post" aria-pressed="true">Post 4:5</button><button id="sh-story" aria-pressed="false">Story 9:16</button></div>
+  <div class="shact"><div class="filebtn"><span id="sh-file-l">Add your photo</span><input type="file" id="sh-file" accept="image/*" aria-label="Add your photo"></div><button id="sh-nophoto" hidden>Remove photo</button></div>
+  <div id="sh-photo-ctl" hidden style="display:none;gap:8px">
+    <div class="seg" role="group" aria-label="Photo layout"><button id="sh-frame" aria-pressed="true">Photo in frame</button><button id="sh-full" aria-pressed="false">Full photo</button></div>
+    <label class="small muted" for="sh-pos">Move photo up or down</label>
+    <input type="range" id="sh-pos" min="0" max="100" value="40">
+  </div>
+  <img id="sh-img" alt="Preview of your share card">
+  <a class="openlink" id="sh-go" target="_blank" rel="noopener" style="min-height:54px;font-size:17px">Save to Photos · Instagram · Strava ↗</a>
+  <p class="small" id="sh-msg" style="margin:0;font-weight:600"></p>
+  <div class="shact"><button id="sh-copyimg">Copy picture</button><button id="sh-copy">Copy caption</button></div>
+  <button id="sh-save">Save as a file instead</button>
+  <p class="small" id="sh-cap" style="margin:0"></p>
+</div></dialog>
+<dialog id="exdlg" aria-labelledby="exdlg-t"><div class="dl">
+  <div class="top"><h2 id="exdlg-t"></h2><button id="exdlg-x" aria-label="Close">Close</button></div>
+  <div id="exdlg-b" style="display:grid;gap:10px"></div>
+</div></dialog>
