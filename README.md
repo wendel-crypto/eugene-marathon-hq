@@ -4,7 +4,7 @@ A personal training app for the 2027 Eugene Marathon (25 April 2027, goal 3:00â€
 
 It holds a 22-week plan, pushes each workout to a Garmin watch, shows the morning's recovery numbers next to the day's session, and collects written feedback after every run.
 
-- Live app: https://claude.ai/artifact/66p5bZRWoTego6NWNBCB3K
+- Live app: private (it shows personal training data)
 - Share card page: https://eugene-bay.vercel.app
 - Case study: https://www.wendelfreitas.com/cases
 
