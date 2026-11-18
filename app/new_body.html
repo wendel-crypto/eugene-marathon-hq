@@ -84,6 +84,13 @@
   <div class="card"><div class="sech"><h2 data-ic="chat">Coach on your last session</h2><span id="fb-score"></span></div><div id="fb-latest" class="fbk"><p class="empty">Feedback lands here after each run syncs from your watch. The first one comes after Tuesday's track session.</p></div></div>
   <div class="card"><div class="sech"><h2 data-ic="calendar">Week summary</h2><span id="ws-chip"></span></div><div id="ws" class="fbk"><p class="empty">Written every Sunday at 2:17pm, after your long run. The first summary arrives Sun 29 Nov.</p></div></div>
 </section>
+<section class="card"><div class="sech"><h2 data-ic="flag">Route map</h2></div>
+  <select id="rt-pick" class="rtpick" aria-label="Pick a run"></select>
+  <div id="rt-wrap" hidden><canvas id="rt-cv" class="rtcv" role="img" aria-label="Map of the run, coloured by pace"></canvas>
+  <div class="rtleg"><span class="n" id="rt-slow"></span><i></i><span class="n" id="rt-fast"></span></div><div class="rtleg small muted" style="margin-top:2px"><span>slower</span><span>faster</span></div></div>
+  <p class="small" id="rt-msg" style="margin:10px 0 0;font-weight:600">Your routes load from Garmin when this page is open in Claude.</p>
+  <button id="rt-share" class="sharebtn" style="margin-top:10px">Share this run with its route</button>
+</section>
 <section class="card"><div class="sech"><h2 data-ic="chat">All session feedback</h2></div><div id="fb-list"><p class="empty">Each run you sync gets a short review here, newest first.</p></div></section>
 <section class="card"><div class="sech"><h2 data-ic="share">Share a run</h2></div><p class="small muted" style="margin:4px 0 10px">Make a card with your distance, time, pace and the coach's line, ready for Instagram or Strava.</p><div id="sh-recent"><p class="empty">Your runs appear here once Garmin loads.</p></div></section>
 </div>
@@ -206,6 +213,7 @@
     <label class="small muted" for="sh-pos">Move photo up or down</label>
     <input type="range" id="sh-pos" min="0" max="100" value="40">
   </div>
+  <label class="small" style="display:flex;gap:8px;align-items:center;font-weight:600"><input type="checkbox" id="sh-route" checked style="width:20px;height:20px"> Show the route on the card</label>
   <img id="sh-img" alt="Preview of your share card">
   <a class="openlink" id="sh-go" target="_blank" rel="noopener" style="min-height:54px;font-size:17px">Save to Photos · Instagram · Strava ↗</a>
   <p class="small" id="sh-msg" style="margin:0;font-weight:600"></p>

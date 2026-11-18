@@ -222,22 +222,23 @@ async function drawCard(){
   const stats=(y,h)=>{const cw=(W-160-40)/3;cols.forEach((col,n)=>{const x=80+n*(cw+20);g.fillStyle=full?"rgba(17,20,45,.55)":"rgba(255,255,255,.16)";g.beginPath();g.roundRect(x,y,cw,h,28);g.fill();g.fillStyle="#fff";const sm=h<160;g.font="600 "+(sm?26:30)+"px "+B;g.globalAlpha=.9;g.fillText(col[0],x+24,y+(sm?42:50));g.globalAlpha=1;g.font="800 "+(sm?52:62)+"px "+D;g.fillText(col[1],x+24,y+h-(sm?26:36));});};
   const foot=()=>{const by=H-(story?330:190);g.fillStyle="rgba(255,255,255,.25)";g.beginPath();g.roundRect(80,by,W-160,22,11);g.fill();g.fillStyle="#fff";g.beginPath();g.roundRect(80,by,Math.max(22,(W-160)*Math.min(1,i.all?i.done/i.all:0)),22,11);g.fill();
     g.font="700 34px "+B;g.fillText(Math.round(i.done)+" of "+Math.round(i.all)+" plan km",80,by+72);g.textAlign="right";g.fillText(i.days+" days to go · goal 3:00–3:05",W-80,by+72);g.textAlign="left";};
+  const Rt=SH.route!==false?routeFor(i):null;
   const coachLine=i.f&&i.f.headline?"Coach"+(i.f.score?" "+i.f.score+"/10":"")+": "+i.f.headline:"";
   if(frame){
     const top=story?250:80;head(top);const fy=top+100,fh=story?700:560,fx=60,fw=W-120;
     g.save();g.shadowColor="rgba(10,12,29,.35)";g.shadowBlur=40;g.shadowOffsetY=16;g.fillStyle="#fff";g.beginPath();g.roundRect(fx,fy,fw,fh,44);g.fill();g.restore();
     g.save();g.beginPath();g.roundRect(fx+12,fy+12,fw-24,fh-24,34);g.clip();cover(g,ph,fx+12,fy+12,fw-24,fh-24,SH.pos);
     if(coachLine){const sh=g.createLinearGradient(0,fy+fh-190,0,fy+fh);sh.addColorStop(0,"rgba(17,20,45,0)");sh.addColorStop(1,"rgba(17,20,45,.82)");g.fillStyle=sh;g.fillRect(fx,fy+fh-190,fw,190);g.fillStyle="#fff";g.font="700 34px "+B;g.fillText(fit(coachLine,fw-110),fx+44,fy+fh-48);}
-    g.restore();
+    g.restore();if(Rt)routePanel(g,Rt,fx+fw-12-18-300,fy+12+18,300,230,false);
     let y=fy+fh+(story?92:78);g.fillStyle="#fff";g.font="800 "+(story?72:60)+"px "+D;g.fillText(fit(i.title,W-160),80,y);
     y+=story?200:148;g.font="800 "+(story?200:150)+"px "+D;g.fillText(km,74,y);const kw=g.measureText(km).width;g.font="800 "+(story?72:56)+"px "+D;g.fillText("km",92+kw,y);
     stats(y+32,story?150:130);foot();
   }else{
     const top=story?250:90;head(top);let y=top+184;g.fillStyle="#fff";g.font="800 84px "+D;g.fillText(fit(i.title,W-160),80,y);
-    if(full){if(coachLine){g.font="700 34px "+B;g.fillText(fit(coachLine,W-160),80,y+62);}y=H-(story?610:470);}else y+=story?330:270;
+    if(full){if(coachLine){g.font="700 34px "+B;g.fillText(fit(coachLine,W-160),80,y+62);}if(Rt)routePanel(g,Rt,W-80-320,top+250,320,250,false);y=H-(story?610:470);}else y+=story?330:270;
     g.font="800 300px "+D;g.fillText(km,70,y);const kw=g.measureText(km).width;g.font="800 90px "+D;g.fillText("km",90+kw,y);
     y+=70;stats(y,170);y+=230;
-    if(full){}else if(i.f&&i.f.headline){const bh=story?250:210;g.fillStyle="rgba(255,255,255,.95)";g.beginPath();g.roundRect(80,y,W-160,bh,28);g.fill();g.fillStyle="#3D5AFE";g.font="800 28px "+B;g.fillText("COACH"+(i.f.score?" · "+i.f.score+"/10":""),112,y+54);
+    if(full){}else if(Rt){routePanel(g,Rt,80,y,W-160,H-(story?330:190)-y-44,true);}else if(i.f&&i.f.headline){const bh=story?250:210;g.fillStyle="rgba(255,255,255,.95)";g.beginPath();g.roundRect(80,y,W-160,bh,28);g.fill();g.fillStyle="#3D5AFE";g.font="800 28px "+B;g.fillText("COACH"+(i.f.score?" · "+i.f.score+"/10":""),112,y+54);
       g.fillStyle="#11142D";g.font="700 40px "+D;const words=String(i.f.headline).split(" ");let line="",ly=y+110,n=0;for(const w of words){if(g.measureText(line+w).width>W-230){g.fillText(line,112,ly);ly+=52;line="";if(++n>=2)break;}line+=w+" ";}if(n<3)g.fillText(line.trim(),112,ly);}
     else{const d0=new Date(i.date+"T12:00:00");d0.setDate(d0.getDate()-((d0.getDay()+6)%7));const wk=weekRun(iso(d0));g.fillStyle="rgba(255,255,255,.16)";g.beginPath();g.roundRect(80,y+10,W-160,150,28);g.fill();g.fillStyle="#fff";g.font="600 30px "+B;g.globalAlpha=.9;g.fillText("This week so far",112,y+62);g.globalAlpha=1;g.font="800 62px "+D;g.fillText((wk||i.a.km).toFixed(1)+" km",112,y+132);}
     foot();
@@ -245,7 +246,7 @@ async function drawCard(){
   $("sh-img").src=c.toDataURL("image/jpeg",.92);$("sh-cap").textContent=caption(i);
   {const d0=new Date(i.date+"T12:00:00");d0.setDate(d0.getDate()-((d0.getDay()+6)%7));const q=new URLSearchParams({d:i.date,t:i.title,km:i.a.km.toFixed(2),s:Math.round(i.a.sec),dn:Math.round(i.done),al:Math.round(i.all),wk:(weekRun(iso(d0))||0).toFixed(1)});
    if(i.a.hr)q.set("hr",Math.round(i.a.hr));if(i.week){q.set("w",i.week.week);q.set("p",i.week.phaseName||"");}if(i.f&&i.f.headline){q.set("c",i.f.headline);if(i.f.score)q.set("cs",i.f.score);}
-   $("sh-go").href="https://eugene-bay.vercel.app/card.html#"+q.toString();}
+   if(Rt)q.set("r",encRoute(Rt)),q.set("rs",Rt.sl),q.set("rf",Rt.fl);$("sh-go").href="https://eugene-bay.vercel.app/card.html#"+q.toString();}
   SH.blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.92));SH.png=await new Promise(r=>c.toBlob(r,"image/png"));
 }
 const HOLD="Tap the big button: your card opens in the browser, then Save or share puts it in Photos, Instagram or Strava. Add your photo there too.";
@@ -267,7 +268,7 @@ function go(v,push=true){
   $("ab-title").textContent=VIEWS[v];$("fab-today").hidden=v!=="plan";
   if(push){try{if(location.hash!=="#"+v)location.hash=v;}catch(e){}window.scrollTo(0,0);}
 }
-function renderAll(){renderCoachLists();renderHero();renderEx();renderToday();renderVol();renderWeek();renderPaces();renderLog();renderBody();renderTrack();renderPred();renderFeedback();}
+function renderAll(){renderCoachLists();renderRoutes();renderHero();renderEx();renderToday();renderVol();renderWeek();renderPaces();renderLog();renderBody();renderTrack();renderPred();renderFeedback();}
 SEL=(started()?curWeek():WEEKS.W01).id;
 ring("r-ready",null,100,"var(--series)");battery(null);ring("r-sleep",null,100,"var(--series)");
 renderAll();
@@ -293,6 +294,10 @@ $("sh-file").addEventListener("change",e=>{const f=e.target.files&&e.target.file
 $("sh-nophoto").addEventListener("click",()=>{SH.photo=null;photoUI();drawCard();});
 for(const [id,l] of [["sh-frame","frame"],["sh-full","full"]])$(id).addEventListener("click",()=>{SH.layout=l;photoUI();drawCard();});
 $("sh-pos").addEventListener("input",e=>{SH.pos=+e.target.value;drawCard();});
+$("sh-route").addEventListener("change",e=>{SH.route=e.target.checked;drawCard();});
+$("rt-pick").addEventListener("change",e=>{RT.id=+e.target.value||e.target.value;showRoute();});
+$("rt-cv").addEventListener("pointerdown",routeTap);
+$("rt-share").addEventListener("click",()=>{const a=outdoorRuns().find(x=>String(x.id)===String(RT.id));if(a)openShare(String(a.start_time).slice(0,10));});
 $("sh-copyimg").addEventListener("click",async()=>{
   try{if(!SH.png||!window.ClipboardItem)throw 0;await navigator.clipboard.write([new ClipboardItem({"image/png":SH.png})]);$("sh-msg").textContent="Picture copied. Open Instagram, start a story or message, and paste.";}
   catch(e){$("sh-msg").textContent="Copying pictures is blocked in this view. Press and hold the picture instead.";}
@@ -327,9 +332,83 @@ document.addEventListener("change",e=>{const t=e.target;if(t.matches&&t.matches(
   db.doc("status/current").onSnapshot(s=>{if(s.exists){STATUS=s.data();if(!BODY&&STATUS.body){BODY=STATUS.body;renderBody();}head();}},()=>{});
 })();
 
+// ---------- routes ----------
+let MCP=null;const ROUTES={},RT={id:null};
+const RAMP=["#7B5CFF","#C84BC4","#F2606A","#FBA238","#F5F02A"];
+function ramp(c){c=Math.max(0,Math.min(1,c))*(RAMP.length-1);const i=Math.min(RAMP.length-2,Math.floor(c)),f=c-i,h=s=>[1,3,5].map(k=>parseInt(s.slice(k,k+2),16)),a=h(RAMP[i]),b=h(RAMP[i+1]);return "rgb("+a.map((v,k)=>Math.round(v+(b[k]-v)*f)).join(",")+")";}
+function outdoorRuns(){return (ACT||[]).filter(a=>/running/.test(a.type||"")&&!/treadmill|indoor|virtual/.test(a.type||"")&&a.id).sort((a,b)=>String(b.start_time).localeCompare(String(a.start_time)));}
+function findRecords(o,d){d=d||0;if(!o||typeof o!=="object"||d>4)return null;if(Array.isArray(o))return o.length>20&&o[0]&&typeof o[0]==="object"?o:null;let best=null;for(const k in o){const x=findRecords(o[k],d+1);if(x&&(!best||x.length>best.length||k==="records"))best=x;if(k==="records"&&x)break;}return best;}
+function parseRoute(payload){
+  const recs=findRecords(payload);if(!recs)return null;
+  const num=(o,ks)=>{for(const k of ks){const v=o[k];if(typeof v==="number"&&isFinite(v))return v;}return null;},deg=v=>Math.abs(v)>180?v*180/2147483648:v;
+  let raw=[];for(const o of recs){let la=num(o,["position_lat","lat","latitude","positionLat"]),lo=num(o,["position_long","lon","lng","longitude","position_lon","positionLong"]);if(la==null||lo==null)continue;la=deg(la);lo=deg(lo);if(!la&&!lo)continue;
+    let t=o.timestamp!=null?o.timestamp:o.time!=null?o.time:o.elapsed_s;t=typeof t==="number"?t:t?Date.parse(t)/1000:null;raw.push({la,lo,sp:num(o,["enhanced_speed","speed","speed_mps"]),d:num(o,["distance","distance_m"]),t});}
+  if(raw.length<10)return null;
+  const R=6371000,rad=Math.PI/180,hav=(a,b)=>{const x=(b.lo-a.lo)*rad*Math.cos((a.la+b.la)/2*rad),y=(b.la-a.la)*rad;return Math.sqrt(x*x+y*y)*R;};
+  let cum=0;raw[0].m=0;for(let i=1;i<raw.length;i++){cum+=hav(raw[i-1],raw[i]);raw[i].m=cum;}
+  const sps=raw.map(p=>p.sp).filter(v=>v!=null&&v>0).sort((a,b)=>a-b),kmh=sps.length&&sps[Math.floor(sps.length/2)]>7.5;
+  const win=Math.max(4,Math.round(raw.length/120));
+  for(let i=0;i<raw.length;i++){const a=raw[Math.max(0,i-win)],b=raw[Math.min(raw.length-1,i+win)];let v=null;
+    if(sps.length>raw.length/2){let s=0,n=0;for(let j=Math.max(0,i-win);j<=Math.min(raw.length-1,i+win);j++)if(raw[j].sp!=null){s+=raw[j].sp;n++;}v=n?s/n/(kmh?3.6:1):null;}
+    else if(a.t!=null&&b.t!=null&&b.t>a.t)v=(b.m-a.m)/(b.t-a.t);
+    raw[i].pace=v&&v>0.8?1000/v:null;}
+  const step=Math.max(1,Math.floor(raw.length/220)),pts=[];for(let i=0;i<raw.length;i+=step)pts.push(raw[i]);if(pts[pts.length-1]!==raw[raw.length-1])pts.push(raw[raw.length-1]);
+  const ps=pts.map(p=>p.pace).filter(v=>v!=null).sort((a,b)=>a-b);if(!ps.length)return null;const pf=ps[Math.floor(ps.length*.08)],pl=ps[Math.floor(ps.length*.92)];
+  const la0=Math.max(...pts.map(p=>p.la)),lo0=Math.min(...pts.map(p=>p.lo)),cm=Math.cos(pts[0].la*rad);let mx=0,my=0;
+  for(const p of pts){p.x=(p.lo-lo0)*cm;p.y=la0-p.la;mx=Math.max(mx,p.x);my=Math.max(my,p.y);}const sc=Math.max(mx,my)||1;
+  return {n:pts.map(p=>[p.x/sc,p.y/sc,p.pace==null?.5:1-Math.max(0,Math.min(1,(p.pace-pf)/((pl-pf)||1))),p.m/1000,p.pace]),pf,pl,km:cum/1000};
+}
+function drawRoute(g,Rt,x,y,w,h,lw,marks){
+  const n=Rt.n;let ax=0,ay=0;for(const p of n){ax=Math.max(ax,p[0]);ay=Math.max(ay,p[1]);}ax=ax||.01;ay=ay||.01;
+  const s=Math.min(w/ax,h/ay),ox=x+(w-ax*s)/2,oy=y+(h-ay*s)/2,P=p=>[ox+p[0]*s,oy+p[1]*s];
+  g.save();g.lineCap="round";g.lineJoin="round";g.beginPath();n.forEach((p,i)=>{const q=P(p);i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]);});g.strokeStyle="rgba(8,10,26,.85)";g.lineWidth=lw+Math.max(4,lw*.7);g.stroke();
+  for(let i=1;i<n.length;i++){const a=P(n[i-1]),b=P(n[i]);g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.strokeStyle=ramp((n[i-1][2]+n[i][2])/2);g.lineWidth=lw;g.stroke();}
+  if(marks){g.font="700 "+Math.round(lw*1.9)+"px 'DM Sans',system-ui,sans-serif";g.textAlign="center";g.textBaseline="middle";let next=1;for(const p of n){if(p[3]>=next){const q=P(p);g.beginPath();g.arc(q[0],q[1],lw*1.7,0,7);g.fillStyle="#11142D";g.fill();g.lineWidth=Math.max(1.5,lw*.25);g.strokeStyle="#fff";g.stroke();g.fillStyle="#fff";g.fillText(String(next),q[0],q[1]+.5);next++;}}g.textAlign="left";g.textBaseline="alphabetic";}
+  const a=P(n[0]),b=P(n[n.length-1]);g.beginPath();g.arc(b[0],b[1],lw*1.25,0,7);g.fillStyle="#11142D";g.fill();g.lineWidth=lw*.5;g.strokeStyle="#fff";g.stroke();
+  g.beginPath();g.arc(a[0],a[1],lw*1.25,0,7);g.fillStyle="#00D68F";g.fill();g.lineWidth=lw*.4;g.strokeStyle="#fff";g.stroke();g.restore();
+  return {P,n};
+}
+function routePanel(g,Rt,x,y,w,h,big){
+  g.save();g.fillStyle="rgba(13,16,36,.78)";g.beginPath();g.roundRect(x,y,w,h,28);g.fill();const pad=big?34:22,leg=big?64:0;
+  drawRoute(g,Rt,x+pad,y+pad,w-pad*2,h-pad*2-leg,big?11:7,false);
+  if(big){const by=y+h-52,bw=260,bx=x+w-pad-bw,gr=g.createLinearGradient(bx,0,bx+bw,0);RAMP.forEach((c,i)=>gr.addColorStop(i/(RAMP.length-1),c));g.fillStyle=gr;g.beginPath();g.roundRect(bx,by,bw,14,7);g.fill();
+    g.fillStyle="#fff";g.font="700 26px 'DM Sans',system-ui,sans-serif";g.textAlign="left";g.fillText("Route · pace",x+pad,by+16);g.font="600 22px 'DM Sans',system-ui,sans-serif";g.globalAlpha=.9;g.fillText(Rt.sl||"slower",bx,by+42);g.textAlign="right";g.fillText(Rt.fl||"faster",bx+bw,by+42);g.textAlign="left";g.globalAlpha=1;}
+  g.restore();
+}
+function actFor(date){return outdoorRuns().filter(a=>String(a.start_time).slice(0,10)===date).sort((a,b)=>(b.distance_meters||0)-(a.distance_meters||0))[0]||null;}
+function routeFor(i){const a=actFor(i.date);if(!a)return null;const Rt=ROUTES[a.id];if(Rt&&Rt.n){Rt.sl=hms(Rt.pl)+"/km";Rt.fl=hms(Rt.pf)+"/km";return Rt;}if(Rt===undefined)loadRoute(a.id).then(x=>{if(x&&SH.date===i.date&&$("shdlg").open)drawCard();});return null;}
+function encRoute(Rt){const k=Math.max(1,Math.ceil(Rt.n.length/110));let s="";for(let i=0;i<Rt.n.length;i+=k){const p=Rt.n[i],e=v=>Math.round(Math.max(0,Math.min(1,v))*1295).toString(36).padStart(2,"0");s+=e(p[0])+e(p[1])+Math.round(p[2]*9);}return s;}
+async function loadRoute(id){
+  if(ROUTES[id]!==undefined&&ROUTES[id]!=="loading")return ROUTES[id];
+  if(ROUTES[id]==="loading")return new Promise(r=>{const iv=setInterval(()=>{if(ROUTES[id]!=="loading"){clearInterval(iv);r(ROUTES[id]);}},300);});
+  try{const c=store.get("route:"+id);if(c){ROUTES[id]=JSON.parse(c);return ROUTES[id];}}catch(e){}
+  if(!MCP){return null;}ROUTES[id]="loading";
+  try{const res=await MCP.callTool("Garmin","get_activity_fit_data",{activity_id:id,include_records:true});const Rt=parseRoute(res&&res.payload!==undefined?res.payload:res);ROUTES[id]=Rt||{err:"nogps"};if(Rt)store.set("route:"+id,JSON.stringify({n:Rt.n.map(p=>p.map(v=>v==null?null:Math.round(v*10000)/10000)),pf:Rt.pf,pl:Rt.pl,km:Rt.km}));}
+  catch(e){ROUTES[id]={err:(e&&e.code)||"failed"};}
+  return ROUTES[id];
+}
+function renderRoutes(){
+  const runs=outdoorRuns().slice(0,30),sel=$("rt-pick");if(!sel)return;
+  if(!runs.length){sel.innerHTML="";$("rt-msg").textContent=ACT?"No outdoor runs with GPS in the last six weeks.":"Your routes load from Garmin when this page is open in Claude.";$("rt-wrap").hidden=true;return;}
+  if(!RT.id||!runs.some(a=>a.id===RT.id))RT.id=runs[0].id;
+  sel.innerHTML=runs.map(a=>{const d=String(a.start_time).slice(0,10),p=findDay(d);return `<option value="${a.id}" ${a.id===RT.id?"selected":""}>${fmt(d)} · ${esc(p?p.d.title:a.name||"Run")} · ${((a.distance_meters||0)/1000).toFixed(1)} km</option>`;}).join("");
+  showRoute();
+}
+async function showRoute(){
+  const id=RT.id;$("rt-msg").textContent="Loading the route from Garmin…";$("rt-wrap").hidden=true;
+  const Rt=await loadRoute(id);if(RT.id!==id)return;
+  if(!Rt||Rt.err){$("rt-msg").textContent=!Rt?"Routes load when this page is open in Claude with Garmin connected.":Rt.err==="nogps"?"This run has no GPS track.":(Rt.err==="approval_required"||Rt.err==="not_in_manifest")?"Allow this page to read the activity file from Garmin, then pick the run again.":"Garmin did not return this route ("+Rt.err+"). Try again in a moment.";if(Rt&&Rt.err!=="nogps")delete ROUTES[id];return;}
+  $("rt-wrap").hidden=false;const c=$("rt-cv"),cw=c.clientWidth||340,dpr=Math.min(3,window.devicePixelRatio||1),ch=Math.round(cw*.78);c.width=cw*dpr;c.height=ch*dpr;c.style.height=ch+"px";
+  const g=c.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.fillStyle="#11142D";g.fillRect(0,0,cw,ch);g.strokeStyle="rgba(255,255,255,.06)";g.lineWidth=1;for(let x=0;x<cw;x+=34){g.beginPath();g.moveTo(x,0);g.lineTo(x,ch);g.stroke();}for(let y=0;y<ch;y+=34){g.beginPath();g.moveTo(0,y);g.lineTo(cw,y);g.stroke();}
+  const dr=drawRoute(g,Rt,26,26,cw-52,ch-52,5,true);RT.dr=dr;RT.rt=Rt;
+  $("rt-slow").textContent=hms(Rt.pl)+"/km";$("rt-fast").textContent=hms(Rt.pf)+"/km";$("rt-msg").textContent="Colour shows pace along the route. Green dot is the start. Tap the line for the pace at that point.";
+}
+function routeTap(e){const d=RT.dr,Rt=RT.rt;if(!d||!Rt)return;const r=$("rt-cv").getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;let best=null,bd=1e9;for(const p of Rt.n){const q=d.P(p),dd=(q[0]-x)**2+(q[1]-y)**2;if(dd<bd){bd=dd;best=p;}}
+  if(best&&bd<45*45)$("rt-msg").textContent="At km "+best[3].toFixed(1)+": "+(best[4]?hms(best[4])+"/km":"no pace reading")+".";}
+
 // ---------- live Garmin ----------
 (async()=>{
-  const mcp=await claude.use("mcp");
+  const mcp=await claude.use("mcp");MCP=mcp;
   if(!mcp){$("live-note").textContent="Live Garmin numbers and charts show when this page is open in Claude with the Garmin connector. The checks still run on their own.";return;}
   const S="Garmin",t=todayISO,ago=n=>addDays(t,-n),slow={cache:{staleTime:900000,gcTime:3600000},refetchInterval:1800000};
   const err=ev=>{const c=ev.error&&ev.error.code;

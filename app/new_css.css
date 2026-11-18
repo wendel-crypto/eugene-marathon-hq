@@ -115,3 +115,8 @@ dialog#shdlg::backdrop{background:rgba(10,12,29,.6)}
 .filebtn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px}
 
 #shdlg .filebtn{display:none}
+
+.rtpick{width:100%;min-height:44px;border-radius:12px;border:1.5px solid var(--line,#DDE0EE);padding:8px 10px;font:600 15px var(--body);background:var(--card,#fff);color:inherit}
+.rtcv{display:block;width:100%;border-radius:16px;margin-top:10px;touch-action:manipulation}
+.rtleg{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-top:10px;font-weight:700}
+.rtleg i{flex:1;height:10px;border-radius:5px;background:linear-gradient(90deg,#7B5CFF,#C84BC4,#F2606A,#FBA238,#F5F02A)}
