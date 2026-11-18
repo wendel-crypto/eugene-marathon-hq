@@ -14,6 +14,9 @@ let ACT=null,byDate={},VO2=[],HRVT=[],SLEEP=[],WLIST=[],PRED=null,FEED={};
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 // own icon set, 24×24 strokes
 const IC={
+ temp:'<path d="M10 4a2 2 0 0 1 4 0v9.5a4.5 4.5 0 1 1-4 0z"/><path d="M12 9v7"/>',
+ drop:'<path d="M12 3.5c3.5 4.2 6 7.300 6 10.300a6 6 0 0 1-12 0c0-3 2.500-6.100 6-10.300z"/>',
+ rain:'<path d="M7 15a4 4 0 0 1 .5-8 5.500 5.500 0 0 1 10.600 1.500A3.300 3.300 0 0 1 17.500 15z"/><path d="M9 18l-1 2.500M13 18l-1 2.500M17 18l-1 2.500"/>',
  calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
  battery:'<rect x="2" y="8" width="17" height="9" rx="2"/><path d="M22 11v3"/><path d="M6 11v3M9.5 11v3"/>',

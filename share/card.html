@@ -15,9 +15,9 @@ button[aria-pressed=true]{background:#fff;color:#11142D;border-color:#fff}
 #msg{margin:0;min-height:1.3em;text-align:center;font-weight:600;color:#cfd4ff;font-size:14px}
 input[type=range]{width:100%}[hidden]{display:none!important}
 </style></head><body><main>
-<div class="row"><button id="post" aria-pressed="true">Post 4:5</button><button id="story" aria-pressed="false">Story 9:16</button></div>
 <div class="row"><label class="btn"><span id="fl">Add your photo</span><input type="file" id="file" accept="image/*"></label><button id="nophoto" hidden>Remove photo</button></div>
 <div id="pctl" hidden style="display:grid;gap:8px"><div class="row"><button id="frame" aria-pressed="true">Photo in frame</button><button id="full" aria-pressed="false">Full photo</button></div><input type="range" id="pos" min="0" max="100" value="40" aria-label="Move photo up or down"></div>
+<div class="row"><label class="btn"><span id="ll">Add race logo</span><input type="file" id="logo" accept="image/*"></label><button id="nologo" hidden>Remove logo</button></div>
 <label id="rl" hidden style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px"><input type="checkbox" id="route" checked style="width:20px;height:20px"> Show the route on the card</label>
 <img id="img" alt="Your run card">
 <p id="msg"></p>
@@ -32,10 +32,10 @@ const q=new URLSearchParams(location.hash.slice(1)),num=k=>+q.get(k)||0;
 const INFO={date:q.get("d")||new Date().toISOString().slice(0,10),a:{km:num("km"),sec:num("s"),hr:num("hr")},title:q.get("t")||"Run",
   week:num("w")?{week:num("w"),phaseName:q.get("p")||""}:null,f:q.get("c")?{headline:q.get("c"),score:num("cs")||null}:null,done:num("dn"),all:num("al")||1599,
   days:Math.max(0,Math.ceil((new Date("2027-04-25T07:00:00-07:00")-new Date())/864e5))};
-const shareInfo=()=>INFO.a.km?INFO:null,weekRun=()=>num("wk"),iso=d=>d.toISOString().slice(0,10);
+const shareInfo=()=>INFO.a.km?INFO:null;
 function hms(s){s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=String(s%60).padStart(2,"0");return h?h+":"+String(m).padStart(2,"0")+":"+x:m+":"+x;}
-const SH={date:INFO.date,fmt:"post",blob:null,png:null,photo:null,layout:"frame",pos:40};
-function routeFromHash(){const s=q.get("r");if(!s||s.length<25)return null;const n=[];for(let i=0;i+5<=s.length;i+=5){const gap=s[i+4]==="x";n.push([parseInt(s.slice(i,i+2),36)/1295,parseInt(s.slice(i+2,i+4),36)/1295,gap?.5:(+s[i+4]||0)/9,0,null,gap?1:0]);}return n.length>4?{n,sl:q.get("rs")||"slower",fl:q.get("rf")||"faster"}:null;}
+const SH={date:INFO.date,fmt:"story",blob:null,photo:null,layout:"frame",pos:40};
+function routeFromHash(){const s=q.get("r");if(!s||s.length<25)return null;const n=[];for(let i=0;i+5<=s.length;i+=5){const gap=s[i+4]==="x";n.push([parseInt(s.slice(i,i+2),36)/1295,parseInt(s.slice(i+2,i+4),36)/1295,gap?.5:(+s[i+4]||0)/9,0,null,gap?1:0]);}return n.length>4?{n}:null;}
 const ROUTE=routeFromHash(),routeFor=()=>ROUTE;
 function cover(g,img,x,y,w,h,pos){const s=Math.max(w/img.naturalWidth,h/img.naturalHeight),sw=w/s,sh=h/s;g.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)*pos/100,sw,sh,x,y,w,h);}
 const RAMP=["#7B5CFF","#C84BC4","#F2606A","#FBA238","#F5F02A"];
@@ -50,65 +50,72 @@ function drawRoute(g,Rt,x,y,w,h,lw,marks){
   g.beginPath();g.arc(a[0],a[1],lw*1.25,0,7);g.fillStyle="#00D68F";g.fill();g.lineWidth=lw*.4;g.strokeStyle="#fff";g.stroke();g.restore();
   return {P,n};
 }
-function routePanel(g,Rt,x,y,w,h,big){
-  g.save();g.fillStyle="rgba(13,16,36,.78)";g.beginPath();g.roundRect(x,y,w,h,28);g.fill();const pad=big?34:22,leg=big?64:0;
-  drawRoute(g,Rt,x+pad,y+pad,w-pad*2,h-pad*2-leg,big?11:7,false);
-  if(big){const by=y+h-52,bw=260,bx=x+w-pad-bw,gr=g.createLinearGradient(bx,0,bx+bw,0);RAMP.forEach((c,i)=>gr.addColorStop(i/(RAMP.length-1),c));g.fillStyle=gr;g.beginPath();g.roundRect(bx,by,bw,14,7);g.fill();
-    g.fillStyle="#fff";g.font="700 26px 'DM Sans',system-ui,sans-serif";g.textAlign="left";g.fillText("Route · pace",x+pad,by+16);g.font="600 22px 'DM Sans',system-ui,sans-serif";g.globalAlpha=.9;g.fillText(Rt.sl||"slower",bx,by+42);g.textAlign="right";g.fillText(Rt.fl||"faster",bx+bw,by+42);g.textAlign="left";g.globalAlpha=1;}
-  g.restore();
-}
 function caption(i){const pace=i.a.km>0.5?hms(i.a.sec/i.a.km)+"/km":"";
   return `${i.title}: ${i.a.km.toFixed(1)} km in ${hms(i.a.sec)}${pace?" ("+pace+")":""}. ${i.week?"Week "+i.week.week+" of 22":"Building up"} on the road to the Eugene Marathon, ${i.days} days to go. Goal 3:00–3:05. #EugeneMarathon #marathontraining #running`;}
+let LOGO=null;
+function sIcon(g,k,x,y,s){g.save();g.translate(x,y);g.scale(s/24,s/24);g.lineWidth=2.3;g.lineCap="round";g.lineJoin="round";g.strokeStyle="#fff";g.fillStyle="#fff";g.beginPath();
+  if(k==="time"){g.arc(12,13.5,8,0,7);g.moveTo(12,9.5);g.lineTo(12,13.5);g.lineTo(15,15.5);g.moveTo(9.5,2.6);g.lineTo(14.5,2.6);g.stroke();}
+  else if(k==="pace"){g.arc(12,15,9,Math.PI,0);g.stroke();g.beginPath();g.moveTo(12,15);g.lineTo(16.6,9);g.stroke();g.beginPath();g.arc(12,15,1.7,0,7);g.fill();}
+  else{g.moveTo(12,20.5);g.bezierCurveTo(-2,11,5,1.5,12,7.5);g.bezierCurveTo(19,1.5,26,11,12,20.5);g.closePath();g.fill();}
+  g.restore();}
 async function drawCard(){
   const i=shareInfo(SH.date);if(!i)return;try{await document.fonts.ready;}catch(e){}
-  const story=SH.fmt==="story",W=1080,H=story?1920:1350,c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");
+  const W=1080,H=1920,c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");
   const D="'Bricolage Grotesque',system-ui,sans-serif",B="'DM Sans',system-ui,sans-serif";
   const ph=SH.photo,frame=ph&&SH.layout==="frame",full=ph&&SH.layout==="full";
-  const grad=()=>{const gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,"#2B3FE0");gr.addColorStop(.55,"#7B2FF7");gr.addColorStop(1,"#D6006F");return gr;};
-  if(full){cover(g,ph,0,0,W,H,SH.pos);const ov=g.createLinearGradient(0,0,0,H);ov.addColorStop(0,"rgba(17,20,45,.62)");ov.addColorStop(.3,"rgba(17,20,45,.10)");ov.addColorStop(.55,"rgba(43,63,224,.30)");ov.addColorStop(1,"rgba(17,20,45,.90)");g.fillStyle=ov;g.fillRect(0,0,W,H);}
-  else{g.fillStyle=grad();g.fillRect(0,0,W,H);g.strokeStyle="rgba(255,255,255,.10)";g.lineWidth=3;for(let r=180;r<1500;r+=150){g.beginPath();g.arc(W+60,-40,r,0,Math.PI*2);g.stroke();}}
-  const pace=i.a.km>0.5?hms(i.a.sec/i.a.km):"–",km=i.a.km.toFixed(1);
-  const cols=[["Time",hms(i.a.sec)],["Pace /km",pace],["Avg heart rate",i.a.hr?Math.round(i.a.hr)+" bpm":"–"]];
-  const head=y=>{g.fillStyle="#fff";g.textAlign="left";g.font="700 34px "+B;g.globalAlpha=.92;g.fillText("ROAD TO EUGENE MARATHON · 25 APR 2027",80,y);g.globalAlpha=1;
-    g.font="700 38px "+B;g.fillText((i.week?"Week "+i.week.week+" of 22 · "+i.week.phaseName:"Pre-season")+" · "+new Date(i.date+"T12:00:00").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"}),80,y+62);};
+  if(full){cover(g,ph,0,0,W,H,SH.pos);const ov=g.createLinearGradient(0,0,0,H);ov.addColorStop(0,"rgba(10,12,29,.62)");ov.addColorStop(.28,"rgba(10,12,29,.08)");ov.addColorStop(.52,"rgba(10,12,29,.12)");ov.addColorStop(1,"rgba(10,12,29,.88)");g.fillStyle=ov;g.fillRect(0,0,W,H);}
+  else{const gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,"#2B3FE0");gr.addColorStop(.55,"#7B2FF7");gr.addColorStop(1,"#D6006F");g.fillStyle=gr;g.fillRect(0,0,W,H);g.strokeStyle="rgba(255,255,255,.08)";g.lineWidth=3;for(let r=180;r<1700;r+=150){g.beginPath();g.arc(-60,H+40,r,0,Math.PI*2);g.stroke();}}
+  const Rt=SH.route!==false?routeFor(i):null,top=230,sh=on=>{g.shadowColor=on&&full?"rgba(0,0,0,.55)":"transparent";g.shadowBlur=on&&full?14:0;g.shadowOffsetY=on&&full?2:0;};
   const fit=(t,max)=>{while(g.measureText(t).width>max&&t.length>8)t=t.slice(0,-2);return t;};
-  const stats=(y,h)=>{const cw=(W-160-40)/3;cols.forEach((col,n)=>{const x=80+n*(cw+20);g.fillStyle=full?"rgba(17,20,45,.55)":"rgba(255,255,255,.16)";g.beginPath();g.roundRect(x,y,cw,h,28);g.fill();g.fillStyle="#fff";const sm=h<160;g.font="600 "+(sm?26:30)+"px "+B;g.globalAlpha=.9;g.fillText(col[0],x+24,y+(sm?42:50));g.globalAlpha=1;g.font="800 "+(sm?52:62)+"px "+D;g.fillText(col[1],x+24,y+h-(sm?26:36));});};
-  const foot=()=>{const by=H-(story?330:190);g.fillStyle="rgba(255,255,255,.25)";g.beginPath();g.roundRect(80,by,W-160,22,11);g.fill();g.fillStyle="#fff";g.beginPath();g.roundRect(80,by,Math.max(22,(W-160)*Math.min(1,i.all?i.done/i.all:0)),22,11);g.fill();
-    g.font="700 34px "+B;g.fillText(Math.round(i.done)+" of "+Math.round(i.all)+" plan km",80,by+72);g.textAlign="right";g.fillText(i.days+" days to go · goal 3:00–3:05",W-80,by+72);g.textAlign="left";};
-  const Rt=SH.route!==false?routeFor(i):null;
-  const coachLine=i.f&&i.f.headline?"Coach"+(i.f.score?" "+i.f.score+"/10":"")+": "+i.f.headline:"";
+  g.fillStyle="#fff";g.textAlign="left";
+  if(LOGO){const lw=430,lh=lw*LOGO.naturalHeight/LOGO.naturalWidth,mh=Math.min(lh,290),mw=mh*lw/lh;g.imageSmoothingQuality="high";g.drawImage(LOGO,64,top-70,mw,mh);}
+  else{sh(1);g.font="800 46px "+D;g.fillText("EUGENE MARATHON",80,top+10);sh(0);}
+  if(Rt)drawRoute(g,Rt,W-70-340,top-80,340,290,8,false);
+  const hy=top+280;sh(1);g.font="700 36px "+B;g.fillText(fit((i.week?"Week "+i.week.week+" of 22 · "+i.week.phaseName:"Pre-season")+" · "+new Date(i.date+"T12:00:00").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"}),W-160),80,hy);sh(0);
+  const pace=i.a.km>0.5?hms(i.a.sec/i.a.km):"–",km=i.a.km.toFixed(1);
+  const cols=[["time",hms(i.a.sec),""],["pace",pace,"/km"],["hr",i.a.hr?String(Math.round(i.a.hr)):"–","bpm"]];
+  const stats=y=>{const cw=(W-160)/3;sh(1);cols.forEach((col,n)=>{const x=80+n*cw;sIcon(g,col[0],x,y-52,58);g.font="800 64px "+D;g.fillText(col[1],x+72,y);const vw=g.measureText(col[1]).width;if(col[2]){g.font="700 30px "+B;g.globalAlpha=.9;g.fillText(col[2],x+80+vw,y);g.globalAlpha=1;}});sh(0);};
+  const foot=()=>{const by=H-330;sh(1);g.fillStyle="rgba(255,255,255,.28)";g.beginPath();g.roundRect(80,by,W-160,18,9);g.fill();g.fillStyle="#fff";g.beginPath();g.roundRect(80,by,Math.max(18,(W-160)*Math.min(1,i.all?i.done/i.all:0)),18,9);g.fill();
+    g.font="700 32px "+B;g.fillText(Math.round(i.done)+" of "+Math.round(i.all)+" plan km",80,by+66);g.textAlign="right";g.fillText(i.days+" days to go · goal 3:00–3:05",W-80,by+66);g.textAlign="left";sh(0);};
+  const bigKm=(y,size)=>{sh(1);g.font="800 "+size+"px "+D;g.fillText(km,74,y);const kw=g.measureText(km).width;g.font="800 "+Math.round(size*.3)+"px "+D;g.fillText("km",94+kw,y);sh(0);};
+  const coach=i.f&&i.f.headline?"Coach"+(i.f.score?" "+i.f.score+"/10":"")+": "+i.f.headline:"";
   if(frame){
-    const top=story?250:80;head(top);const fy=top+100,fh=story?700:560,fx=60,fw=W-120;
+    const fy=hy+50,fh=560,fx=60,fw=W-120;
     g.save();g.shadowColor="rgba(10,12,29,.35)";g.shadowBlur=40;g.shadowOffsetY=16;g.fillStyle="#fff";g.beginPath();g.roundRect(fx,fy,fw,fh,44);g.fill();g.restore();
-    g.save();g.beginPath();g.roundRect(fx+12,fy+12,fw-24,fh-24,34);g.clip();cover(g,ph,fx+12,fy+12,fw-24,fh-24,SH.pos);
-    if(coachLine){const sh=g.createLinearGradient(0,fy+fh-190,0,fy+fh);sh.addColorStop(0,"rgba(17,20,45,0)");sh.addColorStop(1,"rgba(17,20,45,.82)");g.fillStyle=sh;g.fillRect(fx,fy+fh-190,fw,190);g.fillStyle="#fff";g.font="700 34px "+B;g.fillText(fit(coachLine,fw-110),fx+44,fy+fh-48);}
-    g.restore();if(Rt)routePanel(g,Rt,fx+fw-12-18-300,fy+12+18,300,230,false);
-    let y=fy+fh+(story?92:78);g.fillStyle="#fff";g.font="800 "+(story?72:60)+"px "+D;g.fillText(fit(i.title,W-160),80,y);
-    y+=story?200:148;g.font="800 "+(story?200:150)+"px "+D;g.fillText(km,74,y);const kw=g.measureText(km).width;g.font="800 "+(story?72:56)+"px "+D;g.fillText("km",92+kw,y);
-    stats(y+32,story?150:130);foot();
+    g.save();g.beginPath();g.roundRect(fx+12,fy+12,fw-24,fh-24,34);g.clip();cover(g,ph,fx+12,fy+12,fw-24,fh-24,SH.pos);g.restore();
+    let y=fy+fh+92;g.fillStyle="#fff";g.font="800 66px "+D;g.fillText(fit(i.title,W-160),80,y);bigKm(y+190,190);stats(y+296);
+  }else if(full){
+    let y=H-860;sh(1);g.font="800 76px "+D;g.fillText(fit(i.title,W-160),80,y);sh(0);bigKm(y+250,250);stats(y+380);
   }else{
-    const top=story?250:90;head(top);let y=top+184;g.fillStyle="#fff";g.font="800 84px "+D;g.fillText(fit(i.title,W-160),80,y);
-    if(full){if(coachLine){g.font="700 34px "+B;g.fillText(fit(coachLine,W-160),80,y+62);}if(Rt)routePanel(g,Rt,W-80-320,top+250,320,250,false);y=H-(story?610:470);}else y+=story?330:270;
-    g.font="800 300px "+D;g.fillText(km,70,y);const kw=g.measureText(km).width;g.font="800 90px "+D;g.fillText("km",90+kw,y);
-    y+=70;stats(y,170);y+=230;
-    if(full){}else if(Rt){routePanel(g,Rt,80,y,W-160,H-(story?330:190)-y-44,true);}else if(i.f&&i.f.headline){const bh=story?250:210;g.fillStyle="rgba(255,255,255,.95)";g.beginPath();g.roundRect(80,y,W-160,bh,28);g.fill();g.fillStyle="#3D5AFE";g.font="800 28px "+B;g.fillText("COACH"+(i.f.score?" · "+i.f.score+"/10":""),112,y+54);
-      g.fillStyle="#11142D";g.font="700 40px "+D;const words=String(i.f.headline).split(" ");let line="",ly=y+110,n=0;for(const w of words){if(g.measureText(line+w).width>W-230){g.fillText(line,112,ly);ly+=52;line="";if(++n>=2)break;}line+=w+" ";}if(n<3)g.fillText(line.trim(),112,ly);}
-    else{const d0=new Date(i.date+"T12:00:00");d0.setDate(d0.getDate()-((d0.getDay()+6)%7));const wk=weekRun(iso(d0));g.fillStyle="rgba(255,255,255,.16)";g.beginPath();g.roundRect(80,y+10,W-160,150,28);g.fill();g.fillStyle="#fff";g.font="600 30px "+B;g.globalAlpha=.9;g.fillText("This week so far",112,y+62);g.globalAlpha=1;g.font="800 62px "+D;g.fillText((wk||i.a.km).toFixed(1)+" km",112,y+132);}
-    foot();
+    let y=hy+170;g.font="800 86px "+D;g.fillText(fit(i.title,W-160),80,y);bigKm(y+330,310);stats(y+480);
+    if(coach){g.font="700 42px "+D;const words=coach.split(" ");let line="",ly=y+620,n=0;for(const w of words){if(g.measureText(line+w).width>W-160){g.fillText(line.trim(),80,ly);ly+=58;line="";if(++n>=3)break;}line+=w+" ";}if(n<3)g.fillText(line.trim(),80,ly);}
   }
+  foot();
   $("img").src=c.toDataURL("image/jpeg",.92);$("cap").textContent=caption(i);
 
-  SH.blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.92));SH.png=await new Promise(r=>c.toBlob(r,"image/png"));
+  SH.blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.92));
 }
-function ui(){const on=!!SH.photo;$("nophoto").hidden=!on;$("pctl").hidden=!on;$("fl").textContent=on?"Change photo":"Add your photo";
-  $("frame").setAttribute("aria-pressed",SH.layout==="frame");$("full").setAttribute("aria-pressed",SH.layout==="full");$("post").setAttribute("aria-pressed",SH.fmt==="post");$("story").setAttribute("aria-pressed",SH.fmt==="story");}
+
+function ui(){const on=!!SH.photo;$("nophoto").hidden=!on;$("pctl").hidden=!on;$("fl").textContent=on?"Change photo":"Add your photo";$("nologo").hidden=!LOGO;$("ll").textContent=LOGO?"Change race logo":"Add race logo";
+  $("frame").setAttribute("aria-pressed",SH.layout==="frame");$("full").setAttribute("aria-pressed",SH.layout==="full");}
 const say=t=>$("msg").textContent=t;
-$("post").onclick=()=>{SH.fmt="post";ui();drawCard();};$("story").onclick=()=>{SH.fmt="story";ui();drawCard();};
 $("frame").onclick=()=>{SH.layout="frame";ui();drawCard();};$("full").onclick=()=>{SH.layout="full";ui();drawCard();};
 $("pos").oninput=e=>{SH.pos=+e.target.value;drawCard();};$("nophoto").onclick=()=>{SH.photo=null;ui();drawCard();};
 $("file").onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;const im=new Image();im.onload=()=>{SH.photo=im;ui();drawCard();say("");};im.onerror=()=>say("That photo could not be opened. Try another one.");im.src=URL.createObjectURL(f);};
+/* Race logo: picked from the phone, kept only in this browser. A white or near-white background is made transparent. */
+function setLogo(src,save){const im=new Image();im.onload=()=>{LOGO=im;ui();drawCard();if(save){try{localStorage.setItem("runCardLogo",src);}catch(e){}}};im.src=src;}
+$("logo").onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;const im=new Image();im.onerror=()=>say("That logo could not be opened. Try a PNG or JPG.");
+  im.onload=()=>{const k=Math.min(1,1100/im.naturalWidth),w=Math.round(im.naturalWidth*k),h=Math.round(im.naturalHeight*k),c=document.createElement("canvas");c.width=w;c.height=h;const g=c.getContext("2d");g.drawImage(im,0,0,w,h);
+    const d=g.getImageData(0,0,w,h),p=d.data;let x0=w,y0=h,x1=0,y1=0;
+    for(let i=0;i<p.length;i+=4){if(p[i+3]<8)continue;const m=Math.min(p[i],p[i+1],p[i+2]);if(m>=244)p[i+3]=0;else if(m>205){const a=(244-m)/39;p[i+3]=Math.round(p[i+3]*a);}
+      if(p[i+3]>24){const n=i/4,x=n%w,y=(n-x)/w;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}}
+    g.putImageData(d,0,0);if(x1<=x0||y1<=y0){say("That image looks empty once the white is removed.");return;}
+    const o=document.createElement("canvas");o.width=x1-x0+1;o.height=y1-y0+1;o.getContext("2d").drawImage(c,x0,y0,o.width,o.height,0,0,o.width,o.height);setLogo(o.toDataURL("image/png"),true);say("Logo added. It stays on this phone for next time.");};
+  im.src=URL.createObjectURL(f);};
+$("nologo").onclick=()=>{LOGO=null;try{localStorage.removeItem("runCardLogo");}catch(e){}ui();drawCard();};
+try{const s=localStorage.getItem("runCardLogo");if(s)setLogo(s,false);}catch(e){}
 $("copy").onclick=async()=>{try{await navigator.clipboard.writeText($("cap").textContent);say("Caption copied.");}catch(e){say("Could not copy the caption here.");}};
-$("go").onclick=async()=>{if(!SH.blob)return;const file=new File([SH.blob],"run-"+SH.date+"-"+SH.fmt+".jpg",{type:"image/jpeg"});
+$("go").onclick=async()=>{if(!SH.blob)return;const file=new File([SH.blob],"run-"+SH.date+".jpg",{type:"image/jpeg"});
   if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});say("Done.");}catch(e){if(e.name!=="AbortError")say("Sharing did not open. Press and hold the picture to save it.");}return;}
   const a=$("dl");a.href=URL.createObjectURL(SH.blob);a.download=file.name;a.click();say("Saved to your downloads.");};
 if(ROUTE){$("rl").hidden=false;$("route").onchange=e=>{SH.route=e.target.checked;drawCard();};}

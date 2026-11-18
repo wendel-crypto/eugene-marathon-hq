@@ -297,6 +297,12 @@ dialog#shdlg::backdrop{background:rgba(10,12,29,.6)}
 .rtcv{display:block;width:100%;border-radius:16px;margin-top:10px;touch-action:manipulation}
 .rtleg{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-top:10px;font-weight:700}
 .rtleg i{flex:1;height:10px;border-radius:5px;background:linear-gradient(90deg,#7B5CFF,#C84BC4,#F2606A,#FBA238,#F5F02A)}
+
+.wx{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:8px 0 2px}
+.wx span{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;background:var(--soft,#EEF0FA);font-size:14px}
+.wx span svg{width:17px;height:17px}.wx b{font-weight:800}.wx small{color:var(--muted,#6B7190);font-size:12px}
+.wx span.warn{background:#FFF1D6;color:#7A4B00}.wx span.warn small{color:#7A4B00}
+.wx span.sky{background:none;padding:0;color:var(--muted,#6B7190);font-size:13px;flex-basis:100%}
 </style>
 </head>
 <body>
@@ -507,7 +513,6 @@ dialog#shdlg::backdrop{background:rgba(10,12,29,.6)}
   <div class="top"><h2 id="sh-t">Share your run</h2><button id="sh-x" aria-label="Close">Close</button></div>
   <label class="small muted" for="sh-pick">Session</label>
   <select id="sh-pick"></select>
-  <div class="seg" role="group" aria-label="Card shape"><button id="sh-post" aria-pressed="true">Post 4:5</button><button id="sh-story" aria-pressed="false">Story 9:16</button></div>
   <div class="shact"><div class="filebtn"><span id="sh-file-l">Add your photo</span><input type="file" id="sh-file" accept="image/*" aria-label="Add your photo"></div><button id="sh-nophoto" hidden>Remove photo</button></div>
   <div id="sh-photo-ctl" hidden style="display:none;gap:8px">
     <div class="seg" role="group" aria-label="Photo layout"><button id="sh-frame" aria-pressed="true">Photo in frame</button><button id="sh-full" aria-pressed="false">Full photo</button></div>
@@ -518,8 +523,7 @@ dialog#shdlg::backdrop{background:rgba(10,12,29,.6)}
   <img id="sh-img" alt="Preview of your share card">
   <a class="openlink" id="sh-go" target="_blank" rel="noopener" style="min-height:54px;font-size:17px">Save to Photos · Instagram · Strava ↗</a>
   <p class="small" id="sh-msg" style="margin:0;font-weight:600"></p>
-  <div class="shact"><button id="sh-copyimg">Copy picture</button><button id="sh-copy">Copy caption</button></div>
-  <button id="sh-save">Save as a file instead</button>
+  <button id="sh-copy">Copy caption</button>
   <p class="small" id="sh-cap" style="margin:0"></p>
 </div></dialog>
 <dialog id="exdlg" aria-labelledby="exdlg-t"><div class="dl">
@@ -544,6 +548,9 @@ let ACT=null,byDate={},VO2=[],HRVT=[],SLEEP=[],WLIST=[],PRED=null,FEED={};
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 // own icon set, 24×24 strokes
 const IC={
+ temp:'<path d="M10 4a2 2 0 0 1 4 0v9.5a4.5 4.5 0 1 1-4 0z"/><path d="M12 9v7"/>',
+ drop:'<path d="M12 3.5c3.5 4.2 6 7.300 6 10.300a6 6 0 0 1-12 0c0-3 2.500-6.100 6-10.300z"/>',
+ rain:'<path d="M7 15a4 4 0 0 1 .5-8 5.500 5.500 0 0 1 10.600 1.500A3.300 3.300 0 0 1 17.500 15z"/><path d="M9 18l-1 2.500M13 18l-1 2.500M17 18l-1 2.500"/>',
  calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
  battery:'<rect x="2" y="8" width="17" height="9" rx="2"/><path d="M22 11v3"/><path d="M6 11v3M9.5 11v3"/>',
@@ -750,6 +757,9 @@ function dayStatus(d){
   return "";
 }
 function fbBlock(f){return `<div class="hl">${esc(f.headline||"")}</div>${Array.isArray(f.bullets)&&f.bullets.length?`<ul>${f.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul>`:""}${f.next?`<div class="nx">Next time: ${esc(f.next)}</div>`:""}`;}
+let FC={};
+function wx(d){const f=FC[d.date];if(!f||d.date<todayISO)return "";const hot=f.tempC>=26||f.humidity>=90,wet=f.precipPct>=50;
+  return `<div class="wx" title="${esc(f.sky||"")} · ${esc(f.place||"")}, early morning"><span>${ic("temp")}<b>${esc(f.tempC)}°C</b><small>${esc(f.tempF)}°F</small></span><span class="${f.humidity>=90?"warn":""}">${ic("drop")}<b>${esc(f.humidity)}%</b><small>humidity</small></span><span class="${wet?"warn":""}">${ic("rain")}<b>${esc(f.precipPct)}%</b><small>rain</small></span><span class="sky">${esc(f.sky||"")}${hot&&d.km?" · slow the easy pace 5–10 s/km":""}</span></div>`;}
 function dayCard(d,w,big){
   const isT=d.date===todayISO;const daily=DAILY[d.date];const a=byDate[d.date];const st=dayStatus(d);const f=FEED[d.date];
   const rec=recovery(d,w);
@@ -761,6 +771,7 @@ function dayCard(d,w,big){
   return `<article class="day t-${esc(d.type)} ${isT?"today":""}"><div class="bar"></div><div class="in">
     <div class="dhead"><span class="dwhen">${ic("calendar")} ${esc(d.dow)} ${fmt(d.date)}${isT?" · today":""}</span><span style="display:flex;gap:6px;flex-wrap:wrap">${daily&&isT?flagChip(daily.flag):""}${sync}<span class="chip t-${esc(d.type)}">${TYPE[d.type]||esc(d.type)}</span></span></div>
     <div class="dtitle"><h3>${esc(d.title)}</h3><span class="kmz">${zoneBadges(d)}${d.km?`<span class="km">${d.km}<small> km</small></span>`:""}</span></div>
+    ${wx(d)}
     ${act}${a?`<div><button class="sharebtn" data-share="${d.date}">${ic("share")} Share this run</button></div>`:""}
     ${d.adjustNote?`<div class="adj">Adjusted: ${esc(d.adjustNote)}</div>`:""}
     ${f?`<details class="more" ${big||isT?"open":""}><summary>${ic("chat")} Coach feedback${f.score?` · ${esc(f.score)}/10`:""}</summary><div class="fbk" style="margin-top:6px">${fbBlock(f)}</div></details>`:""}
@@ -937,7 +948,7 @@ function renderCoachLists(){
   if(rs.length)$("sh-recent").innerHTML=rs.map(k=>{const a=byDate[k],p=findDay(k);return `<div class="runrow"><span><b>${esc(p?p.d.title:"Run")}</b><br><span class="small muted">${fmt(k)} · ${a.km.toFixed(1)} km · ${hms(a.sec)}</span></span><button class="sharebtn" data-share="${k}">${ic("share")} Share</button></div>`;}).join("");
 }
 // ---------- share card ----------
-let SH={date:null,fmt:"post",blob:null,png:null,photo:null,layout:"frame",pos:40,last:store.get("lastCard")};
+let SH={date:null,fmt:"story",blob:null,png:null,photo:null,layout:"frame",pos:40,last:store.get("lastCard")};
 function shareInfo(date){
   const a=byDate[date];if(!a)return null;const p=findDay(date),f=FEED[date];let done=0,all=0;for(const w of sorted()){all+=w.plannedKm;const x=weekActual(w);if(x)done+=x;}
   return {date,a,title:p?p.d.title:"Run",type:p?p.d.type:"easy",week:p?p.w:null,zone:p?zoneOf(p.d):"",f,done,all,days:Math.max(0,Math.ceil((RACE-new Date())/864e5))};
@@ -945,48 +956,50 @@ function shareInfo(date){
 function caption(i){const pace=i.a.km>0.5?hms(i.a.sec/i.a.km)+"/km":"";
   return `${i.title}: ${i.a.km.toFixed(1)} km in ${hms(i.a.sec)}${pace?" ("+pace+")":""}. ${i.week?"Week "+i.week.week+" of 22":"Building up"} on the road to the Eugene Marathon, ${i.days} days to go. Goal 3:00–3:05. #EugeneMarathon #marathontraining #running`;}
 function cover(g,img,x,y,w,h,pos){const s=Math.max(w/img.naturalWidth,h/img.naturalHeight),sw=w/s,sh=h/s;g.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)*pos/100,sw,sh,x,y,w,h);}
+let LOGO=null;
+function sIcon(g,k,x,y,s){g.save();g.translate(x,y);g.scale(s/24,s/24);g.lineWidth=2.3;g.lineCap="round";g.lineJoin="round";g.strokeStyle="#fff";g.fillStyle="#fff";g.beginPath();
+  if(k==="time"){g.arc(12,13.5,8,0,7);g.moveTo(12,9.5);g.lineTo(12,13.5);g.lineTo(15,15.5);g.moveTo(9.5,2.6);g.lineTo(14.5,2.6);g.stroke();}
+  else if(k==="pace"){g.arc(12,15,9,Math.PI,0);g.stroke();g.beginPath();g.moveTo(12,15);g.lineTo(16.6,9);g.stroke();g.beginPath();g.arc(12,15,1.7,0,7);g.fill();}
+  else{g.moveTo(12,20.5);g.bezierCurveTo(-2,11,5,1.5,12,7.5);g.bezierCurveTo(19,1.5,26,11,12,20.5);g.closePath();g.fill();}
+  g.restore();}
 async function drawCard(){
   const i=shareInfo(SH.date);if(!i)return;try{await document.fonts.ready;}catch(e){}
-  const story=SH.fmt==="story",W=1080,H=story?1920:1350,c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");
+  const W=1080,H=1920,c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");
   const D="'Bricolage Grotesque',system-ui,sans-serif",B="'DM Sans',system-ui,sans-serif";
   const ph=SH.photo,frame=ph&&SH.layout==="frame",full=ph&&SH.layout==="full";
-  const grad=()=>{const gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,"#2B3FE0");gr.addColorStop(.55,"#7B2FF7");gr.addColorStop(1,"#D6006F");return gr;};
-  if(full){cover(g,ph,0,0,W,H,SH.pos);const ov=g.createLinearGradient(0,0,0,H);ov.addColorStop(0,"rgba(17,20,45,.62)");ov.addColorStop(.3,"rgba(17,20,45,.10)");ov.addColorStop(.55,"rgba(43,63,224,.30)");ov.addColorStop(1,"rgba(17,20,45,.90)");g.fillStyle=ov;g.fillRect(0,0,W,H);}
-  else{g.fillStyle=grad();g.fillRect(0,0,W,H);g.strokeStyle="rgba(255,255,255,.10)";g.lineWidth=3;for(let r=180;r<1500;r+=150){g.beginPath();g.arc(W+60,-40,r,0,Math.PI*2);g.stroke();}}
-  const pace=i.a.km>0.5?hms(i.a.sec/i.a.km):"–",km=i.a.km.toFixed(1);
-  const cols=[["Time",hms(i.a.sec)],["Pace /km",pace],["Avg heart rate",i.a.hr?Math.round(i.a.hr)+" bpm":"–"]];
-  const head=y=>{g.fillStyle="#fff";g.textAlign="left";g.font="700 34px "+B;g.globalAlpha=.92;g.fillText("ROAD TO EUGENE MARATHON · 25 APR 2027",80,y);g.globalAlpha=1;
-    g.font="700 38px "+B;g.fillText((i.week?"Week "+i.week.week+" of 22 · "+i.week.phaseName:"Pre-season")+" · "+new Date(i.date+"T12:00:00").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"}),80,y+62);};
+  if(full){cover(g,ph,0,0,W,H,SH.pos);const ov=g.createLinearGradient(0,0,0,H);ov.addColorStop(0,"rgba(10,12,29,.62)");ov.addColorStop(.28,"rgba(10,12,29,.08)");ov.addColorStop(.52,"rgba(10,12,29,.12)");ov.addColorStop(1,"rgba(10,12,29,.88)");g.fillStyle=ov;g.fillRect(0,0,W,H);}
+  else{const gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,"#2B3FE0");gr.addColorStop(.55,"#7B2FF7");gr.addColorStop(1,"#D6006F");g.fillStyle=gr;g.fillRect(0,0,W,H);g.strokeStyle="rgba(255,255,255,.08)";g.lineWidth=3;for(let r=180;r<1700;r+=150){g.beginPath();g.arc(-60,H+40,r,0,Math.PI*2);g.stroke();}}
+  const Rt=SH.route!==false?routeFor(i):null,top=230,sh=on=>{g.shadowColor=on&&full?"rgba(0,0,0,.55)":"transparent";g.shadowBlur=on&&full?14:0;g.shadowOffsetY=on&&full?2:0;};
   const fit=(t,max)=>{while(g.measureText(t).width>max&&t.length>8)t=t.slice(0,-2);return t;};
-  const stats=(y,h)=>{const cw=(W-160-40)/3;cols.forEach((col,n)=>{const x=80+n*(cw+20);g.fillStyle=full?"rgba(17,20,45,.55)":"rgba(255,255,255,.16)";g.beginPath();g.roundRect(x,y,cw,h,28);g.fill();g.fillStyle="#fff";const sm=h<160;g.font="600 "+(sm?26:30)+"px "+B;g.globalAlpha=.9;g.fillText(col[0],x+24,y+(sm?42:50));g.globalAlpha=1;g.font="800 "+(sm?52:62)+"px "+D;g.fillText(col[1],x+24,y+h-(sm?26:36));});};
-  const foot=()=>{const by=H-(story?330:190);g.fillStyle="rgba(255,255,255,.25)";g.beginPath();g.roundRect(80,by,W-160,22,11);g.fill();g.fillStyle="#fff";g.beginPath();g.roundRect(80,by,Math.max(22,(W-160)*Math.min(1,i.all?i.done/i.all:0)),22,11);g.fill();
-    g.font="700 34px "+B;g.fillText(Math.round(i.done)+" of "+Math.round(i.all)+" plan km",80,by+72);g.textAlign="right";g.fillText(i.days+" days to go · goal 3:00–3:05",W-80,by+72);g.textAlign="left";};
-  const Rt=SH.route!==false?routeFor(i):null;
-  const coachLine=i.f&&i.f.headline?"Coach"+(i.f.score?" "+i.f.score+"/10":"")+": "+i.f.headline:"";
+  g.fillStyle="#fff";g.textAlign="left";
+  if(LOGO){const lw=430,lh=lw*LOGO.naturalHeight/LOGO.naturalWidth,mh=Math.min(lh,290),mw=mh*lw/lh;g.imageSmoothingQuality="high";g.drawImage(LOGO,64,top-70,mw,mh);}
+  else{sh(1);g.font="800 46px "+D;g.fillText("EUGENE MARATHON",80,top+10);sh(0);}
+  if(Rt)drawRoute(g,Rt,W-70-340,top-80,340,290,8,false);
+  const hy=top+280;sh(1);g.font="700 36px "+B;g.fillText(fit((i.week?"Week "+i.week.week+" of 22 · "+i.week.phaseName:"Pre-season")+" · "+new Date(i.date+"T12:00:00").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"}),W-160),80,hy);sh(0);
+  const pace=i.a.km>0.5?hms(i.a.sec/i.a.km):"–",km=i.a.km.toFixed(1);
+  const cols=[["time",hms(i.a.sec),""],["pace",pace,"/km"],["hr",i.a.hr?String(Math.round(i.a.hr)):"–","bpm"]];
+  const stats=y=>{const cw=(W-160)/3;sh(1);cols.forEach((col,n)=>{const x=80+n*cw;sIcon(g,col[0],x,y-52,58);g.font="800 64px "+D;g.fillText(col[1],x+72,y);const vw=g.measureText(col[1]).width;if(col[2]){g.font="700 30px "+B;g.globalAlpha=.9;g.fillText(col[2],x+80+vw,y);g.globalAlpha=1;}});sh(0);};
+  const foot=()=>{const by=H-330;sh(1);g.fillStyle="rgba(255,255,255,.28)";g.beginPath();g.roundRect(80,by,W-160,18,9);g.fill();g.fillStyle="#fff";g.beginPath();g.roundRect(80,by,Math.max(18,(W-160)*Math.min(1,i.all?i.done/i.all:0)),18,9);g.fill();
+    g.font="700 32px "+B;g.fillText(Math.round(i.done)+" of "+Math.round(i.all)+" plan km",80,by+66);g.textAlign="right";g.fillText(i.days+" days to go · goal 3:00–3:05",W-80,by+66);g.textAlign="left";sh(0);};
+  const bigKm=(y,size)=>{sh(1);g.font="800 "+size+"px "+D;g.fillText(km,74,y);const kw=g.measureText(km).width;g.font="800 "+Math.round(size*.3)+"px "+D;g.fillText("km",94+kw,y);sh(0);};
+  const coach=i.f&&i.f.headline?"Coach"+(i.f.score?" "+i.f.score+"/10":"")+": "+i.f.headline:"";
   if(frame){
-    const top=story?250:80;head(top);const fy=top+100,fh=story?700:560,fx=60,fw=W-120;
+    const fy=hy+50,fh=560,fx=60,fw=W-120;
     g.save();g.shadowColor="rgba(10,12,29,.35)";g.shadowBlur=40;g.shadowOffsetY=16;g.fillStyle="#fff";g.beginPath();g.roundRect(fx,fy,fw,fh,44);g.fill();g.restore();
-    g.save();g.beginPath();g.roundRect(fx+12,fy+12,fw-24,fh-24,34);g.clip();cover(g,ph,fx+12,fy+12,fw-24,fh-24,SH.pos);
-    if(coachLine){const sh=g.createLinearGradient(0,fy+fh-190,0,fy+fh);sh.addColorStop(0,"rgba(17,20,45,0)");sh.addColorStop(1,"rgba(17,20,45,.82)");g.fillStyle=sh;g.fillRect(fx,fy+fh-190,fw,190);g.fillStyle="#fff";g.font="700 34px "+B;g.fillText(fit(coachLine,fw-110),fx+44,fy+fh-48);}
-    g.restore();if(Rt)routePanel(g,Rt,fx+fw-12-18-300,fy+12+18,300,230,false);
-    let y=fy+fh+(story?92:78);g.fillStyle="#fff";g.font="800 "+(story?72:60)+"px "+D;g.fillText(fit(i.title,W-160),80,y);
-    y+=story?200:148;g.font="800 "+(story?200:150)+"px "+D;g.fillText(km,74,y);const kw=g.measureText(km).width;g.font="800 "+(story?72:56)+"px "+D;g.fillText("km",92+kw,y);
-    stats(y+32,story?150:130);foot();
+    g.save();g.beginPath();g.roundRect(fx+12,fy+12,fw-24,fh-24,34);g.clip();cover(g,ph,fx+12,fy+12,fw-24,fh-24,SH.pos);g.restore();
+    let y=fy+fh+92;g.fillStyle="#fff";g.font="800 66px "+D;g.fillText(fit(i.title,W-160),80,y);bigKm(y+190,190);stats(y+296);
+  }else if(full){
+    let y=H-860;sh(1);g.font="800 76px "+D;g.fillText(fit(i.title,W-160),80,y);sh(0);bigKm(y+250,250);stats(y+380);
   }else{
-    const top=story?250:90;head(top);let y=top+184;g.fillStyle="#fff";g.font="800 84px "+D;g.fillText(fit(i.title,W-160),80,y);
-    if(full){if(coachLine){g.font="700 34px "+B;g.fillText(fit(coachLine,W-160),80,y+62);}if(Rt)routePanel(g,Rt,W-80-320,top+250,320,250,false);y=H-(story?610:470);}else y+=story?330:270;
-    g.font="800 300px "+D;g.fillText(km,70,y);const kw=g.measureText(km).width;g.font="800 90px "+D;g.fillText("km",90+kw,y);
-    y+=70;stats(y,170);y+=230;
-    if(full){}else if(Rt){routePanel(g,Rt,80,y,W-160,H-(story?330:190)-y-44,true);}else if(i.f&&i.f.headline){const bh=story?250:210;g.fillStyle="rgba(255,255,255,.95)";g.beginPath();g.roundRect(80,y,W-160,bh,28);g.fill();g.fillStyle="#3D5AFE";g.font="800 28px "+B;g.fillText("COACH"+(i.f.score?" · "+i.f.score+"/10":""),112,y+54);
-      g.fillStyle="#11142D";g.font="700 40px "+D;const words=String(i.f.headline).split(" ");let line="",ly=y+110,n=0;for(const w of words){if(g.measureText(line+w).width>W-230){g.fillText(line,112,ly);ly+=52;line="";if(++n>=2)break;}line+=w+" ";}if(n<3)g.fillText(line.trim(),112,ly);}
-    else{const d0=new Date(i.date+"T12:00:00");d0.setDate(d0.getDate()-((d0.getDay()+6)%7));const wk=weekRun(iso(d0));g.fillStyle="rgba(255,255,255,.16)";g.beginPath();g.roundRect(80,y+10,W-160,150,28);g.fill();g.fillStyle="#fff";g.font="600 30px "+B;g.globalAlpha=.9;g.fillText("This week so far",112,y+62);g.globalAlpha=1;g.font="800 62px "+D;g.fillText((wk||i.a.km).toFixed(1)+" km",112,y+132);}
-    foot();
+    let y=hy+170;g.font="800 86px "+D;g.fillText(fit(i.title,W-160),80,y);bigKm(y+330,310);stats(y+480);
+    if(coach){g.font="700 42px "+D;const words=coach.split(" ");let line="",ly=y+620,n=0;for(const w of words){if(g.measureText(line+w).width>W-160){g.fillText(line.trim(),80,ly);ly+=58;line="";if(++n>=3)break;}line+=w+" ";}if(n<3)g.fillText(line.trim(),80,ly);}
   }
+  foot();
   $("sh-img").src=c.toDataURL("image/jpeg",.92);$("sh-cap").textContent=caption(i);
   {const d0=new Date(i.date+"T12:00:00");d0.setDate(d0.getDate()-((d0.getDay()+6)%7));const q=new URLSearchParams({d:i.date,t:i.title,km:i.a.km.toFixed(2),s:Math.round(i.a.sec),dn:Math.round(i.done),al:Math.round(i.all),wk:(weekRun(iso(d0))||0).toFixed(1)});
    if(i.a.hr)q.set("hr",Math.round(i.a.hr));if(i.week){q.set("w",i.week.week);q.set("p",i.week.phaseName||"");}if(i.f&&i.f.headline){q.set("c",i.f.headline);if(i.f.score)q.set("cs",i.f.score);}
    if(Rt)q.set("r",encRoute(Rt)),q.set("rs",Rt.sl),q.set("rf",Rt.fl);$("sh-go").href="https://eugene-bay.vercel.app/card.html#"+q.toString();}
-  SH.blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.92));SH.png=await new Promise(r=>c.toBlob(r,"image/png"));
+  SH.blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.92));
 }
 const HOLD="Tap the big button: your card opens in the browser, then Save or share puts it in Photos, Instagram or Strava. Add your photo there too.";
 function photoUI(){const on=!!SH.photo;$("sh-nophoto").hidden=!on;$("sh-photo-ctl").hidden=!on;$("sh-photo-ctl").style.display=on?"grid":"none";$("sh-file-l").textContent=on?"Change photo":"Add your photo";$("sh-frame").setAttribute("aria-pressed",SH.layout==="frame");$("sh-full").setAttribute("aria-pressed",SH.layout==="full");}
@@ -1024,7 +1037,6 @@ document.addEventListener("click",e=>{const b=e.target.closest("button[data-shar
 $("sh-x").addEventListener("click",()=>$("shdlg").close());
 $("shdlg").addEventListener("click",e=>{if(e.target===$("shdlg"))$("shdlg").close();});
 $("sh-pick").addEventListener("change",e=>{SH.date=e.target.value;drawCard();});
-for(const [id,f] of [["sh-post","post"],["sh-story","story"]])$(id).addEventListener("click",()=>{SH.fmt=f;$("sh-post").setAttribute("aria-pressed",f==="post");$("sh-story").setAttribute("aria-pressed",f==="story");drawCard();});
 $("sh-file").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;$("sh-msg").textContent="Loading your photo…";
   const bad=()=>{$("sh-msg").textContent="That photo could not be opened. Try a JPG or PNG from your library.";};
   const load=(src,next)=>{const im=new Image();im.onload=()=>{SH.photo=im;photoUI();drawCard();$("sh-msg").textContent=HOLD;};im.onerror=next;im.src=src;};
@@ -1037,17 +1049,7 @@ $("sh-route").addEventListener("change",e=>{SH.route=e.target.checked;drawCard()
 $("rt-pick").addEventListener("change",e=>{RT.id=+e.target.value||e.target.value;if(ROUTES[RT.id]&&ROUTES[RT.id].err)delete ROUTES[RT.id];showRoute();});
 $("rt-cv").addEventListener("pointerdown",routeTap);
 $("rt-share").addEventListener("click",()=>{const a=outdoorRuns().find(x=>String(x.id)===String(RT.id));if(a)openShare(String(a.start_time).slice(0,10));});
-$("sh-copyimg").addEventListener("click",async()=>{
-  try{if(!SH.png||!window.ClipboardItem)throw 0;await navigator.clipboard.write([new ClipboardItem({"image/png":SH.png})]);$("sh-msg").textContent="Picture copied. Open Instagram, start a story or message, and paste.";}
-  catch(e){$("sh-msg").textContent="Copying pictures is blocked in this view. Press and hold the picture instead.";}
-});
 $("sh-copy").addEventListener("click",async()=>{try{await navigator.clipboard.writeText($("sh-cap").textContent);$("sh-msg").textContent="Caption copied.";}catch(e){$("sh-msg").textContent="Copy was blocked here. Select the caption text below and copy it.";}});
-$("sh-save").addEventListener("click",async()=>{
-  if(!SH.blob)return;const dl=await claude.use("downloads");
-  if(!dl){$("sh-msg").textContent="Sharing is not available in this view. "+HOLD;return;}
-  try{await dl.save({filename:"run-"+SH.date+"-"+SH.fmt+".jpg",data:SH.blob});$("sh-msg").textContent="Saved as a file.";}
-  catch(e){$("sh-msg").textContent=e&&e.code==="declined"?"Not saved.":e&&e.code==="rate_limited"?"A save prompt is already open.":"Could not share here. "+HOLD;}
-});
 
 document.addEventListener("click",e=>{const b=e.target.closest("button[data-ex]");if(b)openEx(b.dataset.ex);});
 $("exdlg-x").addEventListener("click",()=>$("exdlg").close());
@@ -1066,6 +1068,7 @@ document.addEventListener("change",e=>{const t=e.target;if(t.matches&&t.matches(
   const head=()=>{$("syncstatus").textContent=(STATUS&&STATUS.headline?STATUS.headline:"Live plan connected.")+(STATUS&&STATUS.updatedAt?" Updated "+new Date(STATUS.updatedAt).toLocaleString(undefined,{weekday:"short",hour:"numeric",minute:"2-digit"})+".":"");};
   db.collection("weeks").onSnapshot(s=>{s.docs.forEach(doc=>{const v=doc.data();if(v&&v.days)WEEKS[doc.id]=v;});if(!s.metadata.fromCache){got=true;clearTimeout(timer);}head();renderAll();},
     e=>{clearTimeout(timer);$("syncstatus").textContent="Live adjustments are unavailable in this view. Showing the plan as built.";});
+  db.doc("forecast/days").onSnapshot(s=>{FC=(s.exists&&s.data().days)||{};renderToday();renderWeek();},()=>{});
   db.collection("daily").orderBy("date","desc").limit(21).onSnapshot(s=>{DAILY={};s.docs.forEach(d=>{const v=d.data();if(v&&v.date)DAILY[v.date]=v;});renderLog();renderToday();},()=>{});
   db.collection("feedback").orderBy("date","desc").limit(40).onSnapshot(s=>{FEED={};s.docs.forEach(d=>{const v=d.data();if(v&&v.date)FEED[v.date]=v;});renderFeedback();renderToday();renderWeek();},()=>{});
   db.doc("status/current").onSnapshot(s=>{if(s.exists){STATUS=s.data();if(!BODY&&STATUS.body){BODY=STATUS.body;renderBody();}head();}},()=>{});
