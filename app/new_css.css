@@ -126,3 +126,7 @@ dialog#shdlg::backdrop{background:rgba(10,12,29,.6)}
 .wx span svg{width:17px;height:17px}.wx b{font-weight:800}.wx small{color:var(--muted,#6B7190);font-size:12px}
 .wx span.warn{background:#FFF1D6;color:#7A4B00}.wx span.warn small{color:#7A4B00}
 .wx span.sky{background:none;padding:0;color:var(--muted,#6B7190);font-size:13px;flex-basis:100%}
+
+.wx{flex-wrap:nowrap;gap:6px;min-width:0}
+.wx span{flex:none;padding:5px 9px;white-space:nowrap}
+.wx span.sky{flex:1 1 0;min-width:0;flex-basis:0;overflow:hidden;text-overflow:ellipsis;display:block}

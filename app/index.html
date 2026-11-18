@@ -303,6 +303,10 @@ dialog#shdlg::backdrop{background:rgba(10,12,29,.6)}
 .wx span svg{width:17px;height:17px}.wx b{font-weight:800}.wx small{color:var(--muted,#6B7190);font-size:12px}
 .wx span.warn{background:#FFF1D6;color:#7A4B00}.wx span.warn small{color:#7A4B00}
 .wx span.sky{background:none;padding:0;color:var(--muted,#6B7190);font-size:13px;flex-basis:100%}
+
+.wx{flex-wrap:nowrap;gap:6px;min-width:0}
+.wx span{flex:none;padding:5px 9px;white-space:nowrap}
+.wx span.sky{flex:1 1 0;min-width:0;flex-basis:0;overflow:hidden;text-overflow:ellipsis;display:block}
 </style>
 </head>
 <body>
@@ -759,7 +763,7 @@ function dayStatus(d){
 function fbBlock(f){return `<div class="hl">${esc(f.headline||"")}</div>${Array.isArray(f.bullets)&&f.bullets.length?`<ul>${f.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul>`:""}${f.next?`<div class="nx">Next time: ${esc(f.next)}</div>`:""}`;}
 let FC={};
 function wx(d){const f=FC[d.date];if(!f||d.date<todayISO)return "";const hot=f.tempC>=26||f.humidity>=90,wet=f.precipPct>=50;
-  return `<div class="wx" title="${esc(f.sky||"")} · ${esc(f.place||"")}, early morning"><span>${ic("temp")}<b>${esc(f.tempC)}°C</b><small>${esc(f.tempF)}°F</small></span><span class="${f.humidity>=90?"warn":""}">${ic("drop")}<b>${esc(f.humidity)}%</b><small>humidity</small></span><span class="${wet?"warn":""}">${ic("rain")}<b>${esc(f.precipPct)}%</b><small>rain</small></span><span class="sky">${esc(f.sky||"")}${hot&&d.km?" · slow the easy pace 5–10 s/km":""}</span></div>`;}
+  return `<div class="wx" title="${esc(f.sky||"")} · ${esc(f.place||"")}, early morning"><span aria-label="Temperature">${ic("temp")}<b>${esc(f.tempC)}°C</b><small>${esc(f.tempF)}°F</small></span><span class="${f.humidity>=90?"warn":""}" aria-label="Humidity">${ic("drop")}<b>${esc(f.humidity)}%</b></span><span class="${wet?"warn":""}" aria-label="Chance of rain">${ic("rain")}<b>${esc(f.precipPct)}%</b></span><span class="sky">${hot&&d.km?"Ease pace 5–10 s/km · ":""}${esc(f.sky||"")}</span></div>`;}
 function dayCard(d,w,big){
   const isT=d.date===todayISO;const daily=DAILY[d.date];const a=byDate[d.date];const st=dayStatus(d);const f=FEED[d.date];
   const rec=recovery(d,w);
