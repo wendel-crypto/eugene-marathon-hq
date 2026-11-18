@@ -1,0 +1,29 @@
+    <script>
+      // wf-case-eugene: adds the Eugene Marathon Training HQ card to Cases > App; the case page is standalone HTML at /eugene-marathon-hq/
+      (function () {
+        var busy = false;
+        function sync() {
+          if (busy) return; busy = true;
+          try {
+            var card = document.getElementById('wf-eugene-card');
+            var src = document.querySelector('a[href="/cases/rundate-miami"]');
+            if (!src) { if (card) card.remove(); return; }
+            if (card && card.parentElement === src.parentElement) return;
+            if (card) card.remove();
+            card = src.cloneNode(true); card.id = 'wf-eugene-card'; card.setAttribute('href', '/eugene-marathon-hq/');
+            var media = card.children[0], body = card.children[1];
+            if (media) { media.innerHTML = '<img src="https://raw.githubusercontent.com/wendel-crypto/eugene-marathon-hq/main/docs/cover.jpg" alt="Eugene Marathon Training HQ app screens" style="width:100%;height:100%;object-fit:cover;display:block">'; }
+            if (body) {
+              var k = body.children;
+              if (k[0]) k[0].textContent = 'Personal product \u00b7 Web app \u00b7 Running + AI agents';
+              if (k[1]) k[1].textContent = 'Eugene Marathon Training HQ';
+              if (k[2]) k[2].textContent = 'A marathon training app built with Claude: a 22-week plan synced to a Garmin watch, a morning readiness check, written coach feedback after every run and share cards.';
+              if (k[3] && k[3].children.length) { var tags = ['Web app', 'Garmin', 'AI agents', 'Dashboard', 'Running']; var t0 = k[3].children[0]; k[3].innerHTML = ''; tags.forEach(function (t) { var n = t0.cloneNode(false); n.textContent = t; k[3].appendChild(n); }); }
+            }
+            src.parentElement.appendChild(card);
+          } catch (e) {} finally { busy = false; }
+        }
+        function start() { new MutationObserver(sync).observe(document.body, { childList: true, subtree: true }); sync(); }
+        if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+      })();
+    </script>
